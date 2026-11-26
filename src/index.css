@@ -1,0 +1,29 @@
+@import "tailwindcss";
+
+@media print {
+  body * {
+    visibility: hidden !important;
+  }
+  #thermal-print-sheet,
+  #thermal-print-sheet * {
+    visibility: visible !important;
+  }
+  #thermal-print-sheet {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    background: white !important;
+    padding: 3mm !important;
+    margin: 0 !important;
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 3mm !important;
+  }
+  .thermal-sticker-card {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    border: 1.5pt solid #000000 !important;
+    box-shadow: none !important;
+  }
+}
