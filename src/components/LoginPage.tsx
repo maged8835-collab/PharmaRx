@@ -25,12 +25,6 @@ export function LoginPage({ onLoginSuccess }: LoginPageProps) {
     onLoginSuccess(session, rememberMe);
   };
 
-  const fillDemo = () => {
-    setUsername('pharmacist');
-    setPassword('1234');
-    setError('');
-  };
-
   return (
     <div className="min-h-screen bg-slate-900 flex flex-col justify-center items-center p-4">
       <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden">
@@ -73,7 +67,7 @@ export function LoginPage({ onLoginSuccess }: LoginPageProps) {
                 autoComplete="username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="pharmacist"
+                placeholder="username"
                 className="w-full pl-10 pr-3.5 py-2.5 text-sm font-semibold bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none"
               />
             </div>
@@ -116,14 +110,6 @@ export function LoginPage({ onLoginSuccess }: LoginPageProps) {
               />
               <span dir="rtl">تذكر الجلسة على هذا الجهاز</span>
             </label>
-
-            <button
-              type="button"
-              onClick={fillDemo}
-              className="text-xs font-bold text-teal-700 hover:text-teal-900 underline underline-offset-2"
-            >
-              تعبئة بيانات التجربة
-            </button>
           </div>
 
           <button
@@ -133,16 +119,6 @@ export function LoginPage({ onLoginSuccess }: LoginPageProps) {
             <ShieldCheck className="w-4 h-4" />
             <span>دخول إلى المنصة | Sign In</span>
           </button>
-
-          <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-[11px] text-slate-600 space-y-1">
-            <div className="font-bold text-slate-700" dir="rtl">
-              بيانات الدخول الافتراضية:
-            </div>
-            <div className="flex items-center justify-between font-mono text-xs">
-              <span>User: <strong>pharmacist</strong></span>
-              <span>PIN: <strong>1234</strong></span>
-            </div>
-          </div>
         </form>
       </div>
 
