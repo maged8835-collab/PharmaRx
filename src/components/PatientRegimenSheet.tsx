@@ -193,10 +193,7 @@ export function PatientRegimenSheet({
                 <div className="flex flex-wrap items-start justify-between gap-4 pb-4 border-b border-slate-100">
                   <div>
                     <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="text-lg font-black text-slate-900">{item.tradeName}</h3>
-                      <span className="text-xs font-bold bg-teal-50 text-teal-800 border border-teal-200 px-2.5 py-0.5 rounded-full">
-                        {item.genericName}
-                      </span>
+                      <h3 className="text-lg font-black text-slate-900">{item.genericName}</h3>
                       <span className="text-xs font-bold bg-slate-100 text-slate-700 px-2.5 py-0.5 rounded-full font-mono">
                         {item.route} ({item.finalConcMgMl} {item.doseUnit}/mL)
                       </span>

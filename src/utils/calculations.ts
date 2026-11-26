@@ -219,12 +219,11 @@ export function computePatientRegimen(
 export function buildThermalStickers(
   computedRegimen: ComputedRegimenItem[],
   patient: PatientInfo,
-  labelNameMode: LabelNameMode
+  _labelNameMode: LabelNameMode = 'generic'
 ): ThermalSticker[] {
   const stickers: ThermalSticker[] = [];
   computedRegimen.forEach((reg) => {
-    const displayName =
-      labelNameMode === 'trade' ? reg.tradeName : reg.genericName;
+    const displayName = reg.genericName;
 
     reg.scheduleSlots.forEach((slot) => {
       stickers.push({
@@ -265,7 +264,6 @@ export function buildPatientRegimenCsv(
     'MRN / ID',
     'Ward / Unit',
     'Weight (kg)',
-    'Trade Name',
     'Active Ingredient',
     'Unit',
     'Dose (/kg)',
@@ -289,7 +287,6 @@ export function buildPatientRegimenCsv(
       escapeCsvCell(patient.mrn),
       escapeCsvCell(patient.ward),
       patient.weightKg,
-      escapeCsvCell(item.tradeName),
       escapeCsvCell(item.genericName),
       escapeCsvCell(item.doseUnit),
       item.doseMgPerKg,

@@ -57,7 +57,7 @@ export function AutoFillTable({
               type="text"
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
-              placeholder="ابحث بالاسم التجاري (Lasix, Ketolac, Vancocin, Meronem) أو المادة الفعالة (Furosemide, Vancomycin) أو بالعربي..."
+              placeholder="ابحث بالمادة الفعالة (Vancomycin, Meropenem, Furosemide, Ketorolac) أو بالعربي..."
               className="w-full pl-10 pr-9 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none"
             />
             {searchQuery && (
@@ -148,7 +148,7 @@ export function AutoFillTable({
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-slate-900 text-slate-100 text-[11px] uppercase tracking-wider">
-                <th className="py-3 px-4 font-bold">Trade &amp; Active Ingredient</th>
+                <th className="py-3 px-4 font-bold">Active Ingredient</th>
                 <th className="py-3 px-3 font-bold">Indication &amp; Inline Dose/kg</th>
                 <th className="py-3 px-3 font-bold text-right">Calc. Dose</th>
                 <th className="py-3 px-3 font-bold">Standard Prep &amp; Final Conc</th>
@@ -174,9 +174,6 @@ export function AutoFillTable({
                     <td className="py-3 px-4 min-w-[205px]">
                       <div className="flex items-center gap-1.5 flex-wrap">
                         <span className="font-extrabold text-slate-900 text-base">
-                          {drug.tradeName}
-                        </span>
-                        <span className="text-xs font-semibold text-teal-800 bg-teal-50 border border-teal-200 px-2 py-0.5 rounded-md">
                           {drug.genericName}
                         </span>
                         {drug.highAlert && (

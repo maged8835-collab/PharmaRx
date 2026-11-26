@@ -1,22 +1,18 @@
 import { useMemo } from 'react';
 import { Layers, Printer } from 'lucide-react';
-import type { LabelNameMode, StickerSize, ThermalSticker } from '../types/pharmacy';
+import type { StickerSize, ThermalSticker } from '../types/pharmacy';
 
 interface ThermalLabelsViewProps {
   stickers: ThermalSticker[];
   stickerSize: StickerSize;
-  labelNameMode: LabelNameMode;
   onStickerSizeChange: (sz: StickerSize) => void;
-  onLabelNameModeChange: (mode: LabelNameMode) => void;
   onGoToAutoFill: () => void;
 }
 
 export function ThermalLabelsView({
   stickers,
   stickerSize,
-  labelNameMode,
   onStickerSizeChange,
-  onLabelNameModeChange,
   onGoToAutoFill,
 }: ThermalLabelsViewProps) {
   const stickerDimensionStyle = useMemo(() => {
@@ -56,27 +52,8 @@ export function ThermalLabelsView({
             ))}
           </div>
 
-          <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs">
-            <button
-              onClick={() => onLabelNameModeChange('trade')}
-              className={`px-3 py-1 rounded-lg font-bold transition-colors ${
-                labelNameMode === 'trade'
-                  ? 'bg-white text-slate-900 shadow-2xs'
-                  : 'text-slate-600'
-              }`}
-            >
-              Trade Name
-            </button>
-            <button
-              onClick={() => onLabelNameModeChange('generic')}
-              className={`px-3 py-1 rounded-lg font-bold transition-colors ${
-                labelNameMode === 'generic'
-                  ? 'bg-white text-slate-900 shadow-2xs'
-                  : 'text-slate-600'
-              }`}
-            >
-              Active Ingredient
-            </button>
+          <div className="flex items-center bg-teal-50 border border-teal-200 px-3 py-1.5 rounded-xl text-xs font-bold text-teal-900">
+            Active Ingredient Only
           </div>
 
           <button

@@ -22,7 +22,7 @@ interface PumpPreset {
 const ICU_PUMP_PRESETS: PumpPreset[] = [
   {
     id: 'norepi',
-    name: 'Norepinephrine (Levophed)',
+    name: 'Norepinephrine',
     amount: 4,
     amountUnit: 'mg',
     totalMl: 50,
@@ -32,7 +32,7 @@ const ICU_PUMP_PRESETS: PumpPreset[] = [
   },
   {
     id: 'epi',
-    name: 'Epinephrine (Adrenaline)',
+    name: 'Epinephrine',
     amount: 1,
     amountUnit: 'mg',
     totalMl: 50,
@@ -72,7 +72,7 @@ const ICU_PUMP_PRESETS: PumpPreset[] = [
   },
   {
     id: 'fentanyl',
-    name: 'Fentanyl Infusion',
+    name: 'Fentanyl',
     amount: 500,
     amountUnit: 'mcg',
     totalMl: 50,
@@ -82,7 +82,7 @@ const ICU_PUMP_PRESETS: PumpPreset[] = [
   },
   {
     id: 'midazolam',
-    name: 'Midazolam (Dormicum)',
+    name: 'Midazolam',
     amount: 50,
     amountUnit: 'mg',
     totalMl: 50,
@@ -92,7 +92,7 @@ const ICU_PUMP_PRESETS: PumpPreset[] = [
   },
   {
     id: 'insulin',
-    name: 'Regular Insulin (DKA)',
+    name: 'Regular Insulin',
     amount: 50,
     amountUnit: 'Units',
     totalMl: 50,

@@ -164,7 +164,7 @@ export default function App() {
   >({});
   const [showSelectedOnly, setShowSelectedOnly] = useState(false);
 
-  const [labelNameMode, setLabelNameMode] = useState<LabelNameMode>('trade');
+  const [labelNameMode] = useState<LabelNameMode>('generic');
   const [stickerSize, setStickerSize] = useState<StickerSize>('60x40');
   const [addedFeedbackId, setAddedFeedbackId] = useState<string | null>(null);
   const [isQuickAddModalOpen, setIsQuickAddModalOpen] = useState(false);
@@ -686,9 +686,7 @@ export default function App() {
           <ThermalLabelsView
             stickers={allThermalStickers}
             stickerSize={stickerSize}
-            labelNameMode={labelNameMode}
             onStickerSizeChange={setStickerSize}
-            onLabelNameModeChange={setLabelNameMode}
             onGoToAutoFill={() => setActiveTab('autofill')}
           />
         )}

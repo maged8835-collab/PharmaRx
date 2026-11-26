@@ -96,8 +96,8 @@ export function checkRegimenCompatibility(
             alerts.push({
               id: pairKey,
               severity: rule.severity,
-              drugA: a.tradeName,
-              drugB: b.tradeName,
+              drugA: a.genericName,
+              drugB: b.genericName,
               message: rule.message,
             });
           }
@@ -153,7 +153,7 @@ export function getPatientClinicalAlerts(
         alerts.push({
           id: `nicu_ceftriaxone_${item.regimenId}`,
           severity: 'critical',
-          drugName: item.tradeName,
+          drugName: item.genericName,
           title: 'تنبيه حديثي الولادة (NICU Contraindication)',
           message:
             'يُمنع استخدام Ceftriaxone في حديثي الولادة (≤ 28 يوم) لخطر اليرقان النووي والترسب مع الكالسيوم — البديل الموصى به: Cefotaxime.',
@@ -163,7 +163,7 @@ export function getPatientClinicalAlerts(
         alerts.push({
           id: `nicu_ketolac_${item.regimenId}`,
           severity: 'critical',
-          drugName: item.tradeName,
+          drugName: item.genericName,
           title: 'تنبيه حديثي الولادة (NICU)',
           message:
             'Ketorolac غير معتمد في حديثي الولادة والأطفال أقل من سنتين لخطر النزيف والقصور الكلوي.',
@@ -178,9 +178,9 @@ export function getPatientClinicalAlerts(
         alerts.push({
           id: `renal_${item.regimenId}`,
           severity: 'warning',
-          drugName: item.tradeName,
+          drugName: item.genericName,
           title: 'تعديل جرعة القصور الكلوي (Renal Adjustment)',
-          message: `${item.tradeName} (${item.genericName}) يُطرح كلوياً — يجب مراجعة تمديد الفترة الزمنية أو تقليل الجرعة حسب CrCl / eGFR.`,
+          message: `${item.genericName} يُطرح كلوياً — يجب مراجعة تمديد الفترة الزمنية أو تقليل الجرعة حسب CrCl / eGFR.`,
         });
       }
     }

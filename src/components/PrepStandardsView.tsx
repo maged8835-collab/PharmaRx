@@ -342,7 +342,7 @@ export function PrepStandardsView({
                 {isEditing ? (
                   <div className="space-y-2 bg-teal-50/70 p-3 rounded-xl border border-teal-200">
                     <div className="font-bold text-sm text-teal-950">
-                      Editing: {drug.tradeName} ({drug.genericName})
+                      Editing: {drug.genericName}
                     </div>
                     <div className="grid grid-cols-2 gap-2">
                       <div>
@@ -411,10 +411,7 @@ export function PrepStandardsView({
                     <div>
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="font-extrabold text-sm text-slate-900">
-                          {drug.tradeName}
-                        </span>
-                        <span className="text-xs text-slate-500 font-semibold">
-                          ({drug.genericName})
+                          {drug.genericName}
                         </span>
                         <span className="text-xs font-extrabold text-indigo-800 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200 font-mono tabular-nums">
                           {drug.finalConcMgMl} {drug.doseUnit}/mL
