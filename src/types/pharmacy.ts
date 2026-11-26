@@ -57,13 +57,34 @@ export interface FormularyDrug {
   presets: DrugPreset[];
 }
 
+export type AgeUnit = 'days' | 'months' | 'years';
+
 export interface PatientInfo {
   fullName: string;
   mrn: string;
   ward: string;
   weightKg: number | string;
+  ageValue?: number | string;
+  ageUnit?: AgeUnit;
+  renalImpairment?: boolean;
   baseDate: string;
   defaultStartTime: string;
+}
+
+export interface CompatibilityAlert {
+  id: string;
+  severity: 'critical' | 'warning';
+  drugA: string;
+  drugB: string;
+  message: string;
+}
+
+export interface ClinicalGuardrailAlert {
+  id: string;
+  severity: 'critical' | 'warning';
+  drugName: string;
+  title: string;
+  message: string;
 }
 
 export interface RegimenItem {

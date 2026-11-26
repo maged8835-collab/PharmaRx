@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent 
 import { CheckCircle2 } from 'lucide-react';
 import { AutoFillTable } from './components/AutoFillTable';
 import { HeaderNav } from './components/HeaderNav';
+import { InfusionPumpModal } from './components/InfusionPumpModal';
 import { LoginPage } from './components/LoginPage';
 import { PatientIntakeBar, type DemoCaseType } from './components/PatientIntakeBar';
 import { PatientRegimenSheet } from './components/PatientRegimenSheet';
@@ -146,6 +147,7 @@ export default function App() {
   const [stickerSize, setStickerSize] = useState<StickerSize>('60x40');
   const [addedFeedbackId, setAddedFeedbackId] = useState<string | null>(null);
   const [isQuickAddModalOpen, setIsQuickAddModalOpen] = useState(false);
+  const [isPumpModalOpen, setIsPumpModalOpen] = useState(false);
   const [configToast, setConfigToast] = useState('');
   const [newDrugForm, setNewDrugForm] = useState<NewDrugFormState>(INITIAL_NEW_DRUG_FORM);
 
@@ -586,6 +588,7 @@ export default function App() {
         onChange={setPatient}
         onLoadDemoCase={loadDemoCase}
         onClearPatient={handleClearPatient}
+        onOpenPumpCalc={() => setIsPumpModalOpen(true)}
         onSaveToCloud={handleSaveToCloud}
         onLoadSavedPatient={handleLoadSavedPatient}
         onDeleteSavedPatient={handleDeleteSavedPatient}
@@ -689,6 +692,12 @@ export default function App() {
         onChange={setNewDrugForm}
         onClose={() => setIsQuickAddModalOpen(false)}
         onSubmit={handleAddNewFormularyDrug}
+      />
+
+      <InfusionPumpModal
+        isOpen={isPumpModalOpen}
+        weightKg={patient.weightKg}
+        onClose={() => setIsPumpModalOpen(false)}
       />
     </div>
   );
