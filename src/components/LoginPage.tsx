@@ -6,27 +6,25 @@ import {
   Eye,
   EyeOff,
   Lock,
+  Mail,
   ShieldCheck,
   Syringe,
-  User,
   UserPlus,
 } from 'lucide-react';
 import { isSupabaseConfigured } from '../lib/supabase';
 import type { PharmacistSession } from '../types/pharmacy';
-import { authenticateUser } from '../utils/auth';
 import { signInWithSupabaseEmail, signUpWithSupabaseEmail } from '../utils/cloudSync';
 
 interface LoginPageProps {
-  onLoginSuccess: (session: PharmacistSession, remember: boolean) => void;
+  onLoginSuccess: (session: PharmacistSession) => void;
 }
 
 export function LoginPage({ onLoginSuccess }: LoginPageProps) {
   const [mode, setMode] = useState<'signin' | 'signup'>('signin');
   const [displayName, setDisplayName] = useState('');
-  const [usernameOrEmail, setUsernameOrEmail] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [infoMsg, setInfoMsg] = useState('');
@@ -36,16 +34,17 @@ export function LoginPage({ onLoginSuccess }: LoginPageProps) {
     setError('');
     setInfoMsg('');
 
-    const identifier = usernameOrEmail.trim();
-    if (!identifier || !password) return;
+    if (!isSupabaseConfigured) {
+      setError('لم يتم ضبط إعدادات Supabase (VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY).');
+      return;
+    }
 
+    const cleanEmail = email.trim();
+    if (!cleanEmail || !password) return;
+
+    setIsLoading(true);
     if (mode === 'signup') {
-      if (!isSupabaseConfigured) {
-        setError('خدمة التسجيل السحابي غير مهيأة.');
-        return;
-      }
-      setIsLoading(true);
-      const res = await signUpWithSupabaseEmail(identifier, password, displayName);
+      const res = await signUpWithSupabaseEmail(cleanEmail, password, displayName);
       setIsLoading(false);
 
       if (res.error) {
@@ -60,31 +59,19 @@ export function LoginPage({ onLoginSuccess }: LoginPageProps) {
         return;
       }
       if (res.session) {
-        onLoginSuccess(res.session, rememberMe);
+        onLoginSuccess(res.session);
       }
       return;
     }
 
-    // Sign-in mode: email uses Supabase Auth; plain username uses local pharmacist access
-    if (identifier.includes('@') && isSupabaseConfigured) {
-      setIsLoading(true);
-      const res = await signInWithSupabaseEmail(identifier, password);
-      setIsLoading(false);
+    const res = await signInWithSupabaseEmail(cleanEmail, password);
+    setIsLoading(false);
 
-      if (res.error || !res.session) {
-        setError('البريد الإلكتروني أو كلمة المرور غير صحيحة.');
-        return;
-      }
-      onLoginSuccess(res.session, rememberMe);
+    if (res.error || !res.session) {
+      setError('البريد الإلكتروني أو كلمة المرور غير صحيحة.');
       return;
     }
-
-    const localSession = authenticateUser(identifier, password);
-    if (!localSession) {
-      setError('اسم المستخدم أو كلمة المرور غير صحيحة. تأكد وحاول مرة أخرى.');
-      return;
-    }
-    onLoginSuccess(localSession, rememberMe);
+    onLoginSuccess(res.session);
   };
 
   return (
@@ -101,51 +88,47 @@ export function LoginPage({ onLoginSuccess }: LoginPageProps) {
             PediaSurg<span className="text-teal-400">Rx</span>
           </h1>
           <p className="text-xs text-slate-300" dir="rtl">
-            بوابة الصيدلي الإكلينيكي — تسجيل الدخول لمنصة الجرعات والتحضير الوريدي
+            بوابة الصيدلي الإكلينيكي — تسجيل الدخول السحابي عبر Supabase
           </p>
-          {isSupabaseConfigured && (
-            <div className="inline-flex items-center gap-1.5 text-[11px] font-bold bg-teal-500/15 text-teal-200 border border-teal-400/25 px-2.5 py-0.5 rounded-full">
-              <Cloud className="w-3.5 h-3.5" />
-              <span>Supabase Cloud Sync Enabled</span>
-            </div>
-          )}
+          <div className="inline-flex items-center gap-1.5 text-[11px] font-bold bg-teal-500/15 text-teal-200 border border-teal-400/25 px-2.5 py-0.5 rounded-full">
+            <Cloud className="w-3.5 h-3.5" />
+            <span>Supabase Cloud Auth</span>
+          </div>
         </div>
 
-        {isSupabaseConfigured && (
-          <div className="grid grid-cols-2 bg-slate-100 p-1.5 m-4 mb-0 rounded-xl border border-slate-200 text-xs font-bold">
-            <button
-              type="button"
-              onClick={() => {
-                setMode('signin');
-                setError('');
-                setInfoMsg('');
-              }}
-              className={`py-2 rounded-lg transition-all cursor-pointer ${
-                mode === 'signin'
-                  ? 'bg-white text-slate-900 shadow-xs'
-                  : 'text-slate-500 hover:text-slate-800'
-              }`}
-            >
-              تسجيل الدخول
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setMode('signup');
-                setError('');
-                setInfoMsg('');
-              }}
-              className={`py-2 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1 ${
-                mode === 'signup'
-                  ? 'bg-white text-teal-800 shadow-xs'
-                  : 'text-slate-500 hover:text-slate-800'
-              }`}
-            >
-              <UserPlus className="w-3.5 h-3.5" />
-              <span>حساب سحابي جديد</span>
-            </button>
-          </div>
-        )}
+        <div className="grid grid-cols-2 bg-slate-100 p-1.5 m-4 mb-0 rounded-xl border border-slate-200 text-xs font-bold">
+          <button
+            type="button"
+            onClick={() => {
+              setMode('signin');
+              setError('');
+              setInfoMsg('');
+            }}
+            className={`py-2 rounded-lg transition-all cursor-pointer ${
+              mode === 'signin'
+                ? 'bg-white text-slate-900 shadow-xs'
+                : 'text-slate-500 hover:text-slate-800'
+            }`}
+          >
+            تسجيل الدخول
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setMode('signup');
+              setError('');
+              setInfoMsg('');
+            }}
+            className={`py-2 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1 ${
+              mode === 'signup'
+                ? 'bg-white text-teal-800 shadow-xs'
+                : 'text-slate-500 hover:text-slate-800'
+            }`}
+          >
+            <UserPlus className="w-3.5 h-3.5" />
+            <span>حساب جديد</span>
+          </button>
+        </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {error && (
@@ -188,21 +171,19 @@ export function LoginPage({ onLoginSuccess }: LoginPageProps) {
 
           <div>
             <label className="block text-xs font-bold text-slate-700 mb-1.5 flex justify-between">
-              <span>{mode === 'signup' ? 'Email' : 'Email or Username'}</span>
-              <span dir="rtl">
-                {mode === 'signup' ? 'البريد الإلكتروني' : 'البريد الإلكتروني أو اسم المستخدم'}
-              </span>
+              <span>Email</span>
+              <span dir="rtl">البريد الإلكتروني</span>
             </label>
             <div className="relative">
-              <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
+              <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
               <input
-                type={mode === 'signup' ? 'email' : 'text'}
+                type="email"
                 required
                 autoFocus
-                autoComplete="username"
-                value={usernameOrEmail}
-                onChange={(e) => setUsernameOrEmail(e.target.value)}
-                placeholder={mode === 'signup' ? 'pharmacist@hospital.com' : 'username or email'}
+                autoComplete="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="pharmacist@hospital.com"
                 className="w-full pl-10 pr-3.5 py-2.5 text-sm font-semibold bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none"
               />
             </div>
@@ -210,15 +191,15 @@ export function LoginPage({ onLoginSuccess }: LoginPageProps) {
 
           <div>
             <label className="block text-xs font-bold text-slate-700 mb-1.5 flex justify-between">
-              <span>Password / PIN</span>
-              <span dir="rtl">كلمة المرور / الرقم السري</span>
+              <span>Password</span>
+              <span dir="rtl">كلمة المرور</span>
             </label>
             <div className="relative">
               <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
               <input
                 type={showPassword ? 'text' : 'password'}
                 required
-                minLength={mode === 'signup' ? 6 : 1}
+                minLength={6}
                 autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -228,27 +209,13 @@ export function LoginPage({ onLoginSuccess }: LoginPageProps) {
               <button
                 type="button"
                 onClick={() => setShowPassword((prev) => !prev)}
-                className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-700"
+                className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-700 cursor-pointer"
                 title={showPassword ? 'Hide password' : 'Show password'}
               >
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
           </div>
-
-          {mode === 'signin' && (
-            <div className="flex items-center justify-between pt-1">
-              <label className="flex items-center gap-2 text-xs font-semibold text-slate-600 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                  className="rounded border-slate-300 text-teal-600 focus:ring-teal-500"
-                />
-                <span dir="rtl">تذكر الجلسة على هذا الجهاز</span>
-              </label>
-            </div>
-          )}
 
           <button
             type="submit"
@@ -268,7 +235,7 @@ export function LoginPage({ onLoginSuccess }: LoginPageProps) {
       </div>
 
       <p className="relative z-10 mt-5 text-[11px] text-slate-400 text-center">
-        PediaSurgRx Clinical Pharmacy System • Supabase Cloud &amp; Local Protection
+        PediaSurgRx Clinical Pharmacy System • Powered by Supabase
       </p>
     </div>
   );

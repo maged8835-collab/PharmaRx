@@ -1,5 +1,5 @@
 import { useState, type ChangeEvent, type FormEvent } from 'react';
-import { Download, Edit3, Plus, RefreshCw, Upload } from 'lucide-react';
+import { Download, Edit3, Plus, Upload } from 'lucide-react';
 import type { DoseUnit, FormularyDrug, FrequencyKey, NewDrugFormState } from '../types/pharmacy';
 import { FREQUENCY_CONFIG, VALID_DOSE_UNITS } from '../utils/calculations';
 
@@ -19,7 +19,6 @@ interface PrepStandardsViewProps {
   ) => void;
   onExportJson: () => void;
   onImportFile: (e: ChangeEvent<HTMLInputElement>) => void;
-  onResetDefault: () => void;
 }
 
 export function PrepStandardsView({
@@ -30,7 +29,6 @@ export function PrepStandardsView({
   onSaveDrugEdit,
   onExportJson,
   onImportFile,
-  onResetDefault,
 }: PrepStandardsViewProps) {
   const [editingDrugId, setEditingDrugId] = useState<string | null>(null);
   const [editConcValue, setEditConcValue] = useState('');
@@ -306,14 +304,6 @@ export function PrepStandardsView({
                 className="hidden"
               />
             </label>
-
-            <button
-              onClick={onResetDefault}
-              className="px-3 py-1.5 rounded-lg text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200 flex items-center gap-1"
-            >
-              <RefreshCw className="w-3.5 h-3.5" />
-              <span>Reset Default</span>
-            </button>
           </div>
           <p className="text-[10px] text-slate-400">
             CSV Columns: TradeName, GenericName, Category, FinalConc, DosePerKg, MaxSingle,

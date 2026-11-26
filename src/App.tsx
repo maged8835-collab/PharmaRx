@@ -1,9 +1,46 @@
-import { lazy, Suspense, useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent } from 'react';
-import { CheckCircle2 } from 'lucide-react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from 'react';
+import { AlertCircle, CheckCircle2, RefreshCw } from 'lucide-react';
 import { HeaderNav } from './components/HeaderNav';
 import { LoginPage } from './components/LoginPage';
-import { PatientIntakeBar, type DemoCaseType } from './components/PatientIntakeBar';
-import { INITIAL_PHARMACY_FORMULARY } from './data/formulary';
+import { PatientIntakeBar } from './components/PatientIntakeBar';
+import type {
+  ActiveTab,
+  AutoFilledDrug,
+  FormularyDrug,
+  FrequencyKey,
+  NewDrugFormState,
+  PatientInfo,
+  PharmacistSession,
+  RegimenItem,
+  SavedPatientRecord,
+  StickerSize,
+} from './types/pharmacy';
+import {
+  buildPatientRegimenCsv,
+  buildThermalStickers,
+  computeAutoFilledDrug,
+  computePatientRegimen,
+  parseFormularyCsv,
+  sanitizeWeightKg,
+} from './utils/calculations';
+import {
+  bulkUpsertMedicationsToSupabase,
+  deleteSavedPatient,
+  fetchMedicationsFromSupabase,
+  fetchSavedPatients,
+  getActiveSupabaseSession,
+  savePatientToCloud,
+  signOutSupabase,
+  upsertMedicationToSupabase,
+} from './utils/cloudSync';
+import {
+  createEmptyPatient,
+  loadPatient,
+  loadRegimen,
+  normalizeFormularyDrug,
+  savePatient,
+  saveRegimen,
+} from './utils/storage';
 
 const AutoFillTable = lazy(() =>
   import('./components/AutoFillTable').then((m) => ({ default: m.AutoFillTable }))
@@ -31,46 +68,6 @@ const InfusionPumpModal = lazy(() =>
     default: m.InfusionPumpModal,
   }))
 );
-import type {
-  ActiveTab,
-  AutoFilledDrug,
-  FormularyDrug,
-  FrequencyKey,
-  LabelNameMode,
-  NewDrugFormState,
-  PatientInfo,
-  PharmacistSession,
-  RegimenItem,
-  SavedPatientRecord,
-  StickerSize,
-} from './types/pharmacy';
-import { clearSession, loadSession, saveSession } from './utils/auth';
-import {
-  deleteSavedPatient,
-  fetchCloudFormulary,
-  fetchSavedPatients,
-  getActiveSupabaseSession,
-  saveCloudFormulary,
-  savePatientToCloud,
-  signOutSupabase,
-} from './utils/cloudSync';
-import {
-  buildPatientRegimenCsv,
-  buildThermalStickers,
-  computeAutoFilledDrug,
-  computePatientRegimen,
-  parseFormularyCsv,
-  sanitizeWeightKg,
-} from './utils/calculations';
-import {
-  loadFormulary,
-  loadPatient,
-  loadRegimen,
-  normalizeFormularyDrug,
-  saveFormulary,
-  savePatient,
-  saveRegimen,
-} from './utils/storage';
 
 const INITIAL_NEW_DRUG_FORM: NewDrugFormState = {
   tradeName: '',
@@ -92,54 +89,50 @@ const INITIAL_NEW_DRUG_FORM: NewDrugFormState = {
 };
 
 export default function App() {
-  const [session, setSession] = useState<PharmacistSession | null>(() => loadSession());
+  const [session, setSession] = useState<PharmacistSession | null>(null);
+  const [isCheckingSession, setIsCheckingSession] = useState(true);
+
+  const [formulary, setFormulary] = useState<FormularyDrug[]>([]);
+  const [isLoadingFormulary, setIsLoadingFormulary] = useState(false);
+  const [formularyError, setFormularyError] = useState('');
+
   const [savedPatients, setSavedPatients] = useState<SavedPatientRecord[]>([]);
   const [isSavingCloud, setIsSavingCloud] = useState(false);
-  const cloudHydratedRef = useRef(false);
 
-  const [formulary, setFormulary] = useState<FormularyDrug[]>(() =>
-    loadFormulary(INITIAL_PHARMACY_FORMULARY)
-  );
   const [patient, setPatient] = useState<PatientInfo>(() => loadPatient());
   const [patientRegimen, setPatientRegimen] = useState<RegimenItem[]>(() => loadRegimen());
 
   useEffect(() => {
     getActiveSupabaseSession().then((sbSession) => {
-      if (sbSession) {
-        setSession(sbSession);
-      }
+      setSession(sbSession);
+      setIsCheckingSession(false);
     });
   }, []);
 
+  const loadCloudData = useCallback(async (userId: string) => {
+    setIsLoadingFormulary(true);
+    setFormularyError('');
+    const [{ drugs, error }, patients] = await Promise.all([
+      fetchMedicationsFromSupabase(),
+      fetchSavedPatients(userId),
+    ]);
+    setIsLoadingFormulary(false);
+    if (error) {
+      setFormularyError(error);
+    } else {
+      setFormulary(drugs);
+    }
+    setSavedPatients(patients);
+  }, []);
+
   useEffect(() => {
-    if (session?.authSource !== 'supabase' || !session.userId) {
-      cloudHydratedRef.current = false;
+    if (!session?.userId) {
+      setFormulary([]);
       setSavedPatients([]);
       return;
     }
-    const uid = session.userId;
-    Promise.all([fetchCloudFormulary(uid), fetchSavedPatients(uid)]).then(
-      ([cloudForm, patients]) => {
-        if (cloudForm && cloudForm.length > 0) {
-          setFormulary(cloudForm);
-        }
-        setSavedPatients(patients);
-        cloudHydratedRef.current = true;
-      }
-    );
-  }, [session?.authSource, session?.userId]);
-
-  useEffect(() => {
-    saveFormulary(formulary);
-    if (session?.authSource !== 'supabase' || !session.userId || !cloudHydratedRef.current) {
-      return;
-    }
-    const uid = session.userId;
-    const timer = setTimeout(() => {
-      saveCloudFormulary(uid, formulary);
-    }, 800);
-    return () => clearTimeout(timer);
-  }, [formulary, session?.authSource, session?.userId]);
+    loadCloudData(session.userId);
+  }, [session?.userId, loadCloudData]);
 
   useEffect(() => {
     savePatient(patient);
@@ -164,7 +157,6 @@ export default function App() {
   >({});
   const [showSelectedOnly, setShowSelectedOnly] = useState(false);
 
-  const [labelNameMode] = useState<LabelNameMode>('generic');
   const [stickerSize, setStickerSize] = useState<StickerSize>('60x40');
   const [addedFeedbackId, setAddedFeedbackId] = useState<string | null>(null);
   const [isQuickAddModalOpen, setIsQuickAddModalOpen] = useState(false);
@@ -197,7 +189,6 @@ export default function App() {
         const matchesCategory = selectedCategory === 'All' || drug.category === selectedCategory;
         const matchesQuery =
           !q ||
-          drug.tradeName.toLowerCase().includes(q) ||
           drug.genericName.toLowerCase().includes(q) ||
           (drug.arabicName && drug.arabicName.includes(q)) ||
           drug.category.toLowerCase().includes(q);
@@ -232,15 +223,15 @@ export default function App() {
   );
 
   const allThermalStickers = useMemo(
-    () => buildThermalStickers(computedPatientRegimen, patient, labelNameMode),
-    [computedPatientRegimen, patient, labelNameMode]
+    () => buildThermalStickers(computedPatientRegimen, patient, 'generic'),
+    [computedPatientRegimen, patient]
   );
 
   const handleAddDrugToPatientSheet = (calculatedDrug: AutoFilledDrug) => {
     const newEntry: RegimenItem = {
       regimenId: `${calculatedDrug.id}_${Date.now()}`,
       drugId: calculatedDrug.id,
-      tradeName: calculatedDrug.tradeName,
+      tradeName: calculatedDrug.genericName,
       genericName: calculatedDrug.genericName,
       doseMgPerKg: calculatedDrug.effectiveDosePerKg,
       maxSingleMg: calculatedDrug.activePreset.maxSingleMg,
@@ -280,132 +271,8 @@ export default function App() {
   };
 
   const handleClearPatient = () => {
-    const todayIso = new Date().toISOString().slice(0, 10);
-    setPatient({
-      fullName: '',
-      mrn: '',
-      ward: '',
-      weightKg: 10,
-      baseDate: todayIso,
-      defaultStartTime: '12:00',
-    });
+    setPatient(createEmptyPatient());
     setPatientRegimen([]);
-  };
-
-  const loadDemoCase = (caseType: DemoCaseType) => {
-    if (caseType === 'baraa') {
-      setPatient({
-        fullName: 'براء محمد عبدالسلام عبدالحميد',
-        mrn: '20234098',
-        ward: 'قسطرة',
-        weightKg: 21,
-        baseDate: '2026-11-22',
-        defaultStartTime: '12:00',
-      });
-      setPatientRegimen([
-        {
-          regimenId: 'demo_ketolac_1',
-          drugId: 'ketolac',
-          tradeName: 'Ketolac',
-          genericName: 'Ketorolac Tromethamine',
-          doseMgPerKg: 0.5,
-          maxSingleMg: 30,
-          finalConcMgMl: 15,
-          doseUnit: 'mg',
-          route: 'IV Shot',
-          diluent: '0.9% NS',
-          prepInstructions: 'Dilute 30 mg (1 mL) + 1 mL 0.9% NS -> Total 2 mL (15 mg/mL)',
-          frequency: 'q12h',
-          startTime: '12:00',
-          stability: '24h RT',
-          reference: 'Lexidrug / BNFc',
-        },
-      ]);
-    } else if (caseType === 'mohamed') {
-      setPatient({
-        fullName: 'محمد علي رجب محمد جابر',
-        mrn: '20248000',
-        ward: 'WARD',
-        weightKg: 36,
-        baseDate: '2026-11-22',
-        defaultStartTime: '12:00',
-      });
-      setPatientRegimen([
-        {
-          regimenId: 'demo_ketolac_2',
-          drugId: 'ketolac',
-          tradeName: 'Ketolac',
-          genericName: 'Ketorolac Tromethamine',
-          doseMgPerKg: 0.5,
-          maxSingleMg: 30,
-          finalConcMgMl: 15,
-          doseUnit: 'mg',
-          route: 'IV Shot',
-          diluent: '0.9% NS',
-          prepInstructions: 'Dilute 30 mg (1 mL) + 1 mL 0.9% NS -> Total 2 mL (15 mg/mL)',
-          frequency: 'q12h',
-          startTime: '12:00',
-          stability: '24h RT',
-          reference: 'Lexidrug / BNFc',
-        },
-      ]);
-    } else if (caseType === 'fares_vanco') {
-      setPatient({
-        fullName: 'فارس محمود (حالة Vancomycin 36 kg)',
-        mrn: '20261109',
-        ward: 'WARD',
-        weightKg: 36,
-        baseDate: '2026-11-22',
-        defaultStartTime: '13:00',
-      });
-      setPatientRegimen([
-        {
-          regimenId: 'demo_vanco_1',
-          drugId: 'vancocin',
-          tradeName: 'Vancocin',
-          genericName: 'Vancomycin',
-          doseMgPerKg: 20,
-          maxSingleMg: 1000,
-          finalConcMgMl: 5,
-          doseUnit: 'mg',
-          route: 'IV Infusion',
-          diluent: '0.9% NS / D5W',
-          prepInstructions: '500 mg in 100 mL NS/D5W -> 5 mg/mL (Infuse over 60-90 min)',
-          frequency: 'q8h',
-          startTime: '13:00',
-          stability: '24h RT | 14d Fridge at 5 mg/mL',
-          reference: 'Lexidrug / ASHP IDSA',
-        },
-      ]);
-    } else if (caseType === 'lasix_3kg') {
-      setPatient({
-        fullName: 'يوسف أحمد (حالة Lasix 3 kg)',
-        mrn: '20263001',
-        ward: 'PICU',
-        weightKg: 3,
-        baseDate: '2026-11-22',
-        defaultStartTime: '12:00',
-      });
-      setPatientRegimen([
-        {
-          regimenId: 'demo_lasix_3kg',
-          drugId: 'lasix',
-          tradeName: 'Lasix',
-          genericName: 'Furosemide',
-          doseMgPerKg: 1,
-          maxSingleMg: 40,
-          finalConcMgMl: 2,
-          doseUnit: 'mg',
-          route: 'IV Shot',
-          diluent: '0.9% NS',
-          prepInstructions: 'Dilute 20 mg (2 mL) + 8 mL 0.9% NS -> Total 10 mL (2 mg/mL)',
-          frequency: 'q12h',
-          startTime: '12:00',
-          stability: '24h RT; protect from light',
-          reference: 'Lexidrug / Trissel’s',
-        },
-      ]);
-    }
   };
 
   const handleExportPatientExcel = () => {
@@ -422,7 +289,7 @@ export default function App() {
     URL.revokeObjectURL(url);
   };
 
-  const handleSaveMasterDrugEdit = (
+  const handleSaveMasterDrugEdit = async (
     drugId: string,
     updates: {
       finalConcMgMl: number;
@@ -431,22 +298,29 @@ export default function App() {
       stability: string;
     }
   ) => {
-    setFormulary((prev) =>
-      prev.map((d) => (d.id === drugId ? { ...d, ...updates } : d))
-    );
-    showToast('تم حفظ تعديل التركيز القياسي وتحديث جميع الحسابات تلقائياً.');
+    const existing = formulary.find((d) => d.id === drugId);
+    if (!existing) return;
+    const updatedDrug = { ...existing, ...updates };
+    setFormulary((prev) => prev.map((d) => (d.id === drugId ? updatedDrug : d)));
+    const { ok, error } = await upsertMedicationToSupabase(updatedDrug);
+    if (ok) {
+      showToast('تم حفظ تعديل التركيز القياسي على Supabase وتحديث جميع الحسابات.');
+    } else {
+      showToast(`تعذر الحفظ على Supabase: ${error}`);
+    }
   };
 
-  const handleAddNewFormularyDrug = (e: FormEvent) => {
+  const handleAddNewFormularyDrug = async (e: FormEvent) => {
     e.preventDefault();
-    if (!newDrugForm.tradeName.trim() || !newDrugForm.genericName.trim()) return;
+    if (!newDrugForm.genericName.trim()) return;
 
     const unit = newDrugForm.doseUnit;
+    const generic = newDrugForm.genericName.trim();
     const newItem: FormularyDrug = {
       id: `custom_${Date.now()}`,
-      tradeName: newDrugForm.tradeName.trim(),
-      genericName: newDrugForm.genericName.trim(),
-      arabicName: newDrugForm.arabicName.trim() || newDrugForm.tradeName.trim(),
+      tradeName: newDrugForm.tradeName.trim() || generic,
+      genericName: generic,
+      arabicName: newDrugForm.arabicName.trim() || generic,
       category: newDrugForm.category,
       diluent: newDrugForm.diluent,
       prepInstructions: newDrugForm.prepInstructions,
@@ -474,9 +348,12 @@ export default function App() {
       category: newDrugForm.category,
     });
     setIsQuickAddModalOpen(false);
-    showToast(
-      `تم إضافة "${newItem.tradeName} (${newItem.genericName})" وحساب جرعته لوزن ${patient.weightKg} كجم.`
-    );
+    const { ok, error } = await upsertMedicationToSupabase(newItem);
+    if (ok) {
+      showToast(`تم حفظ "${newItem.genericName}" في قاعدة بيانات Supabase.`);
+    } else {
+      showToast(`تعذر الحفظ على Supabase: ${error}`);
+    }
   };
 
   const handleExportMasterJson = () => {
@@ -495,25 +372,33 @@ export default function App() {
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = (ev) => {
+    reader.onload = async (ev) => {
       const text = String(ev.target?.result || '');
       try {
+        let toImport: FormularyDrug[] = [];
         if (file.name.endsWith('.json')) {
           const parsed = JSON.parse(text);
           if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].finalConcMgMl) {
-            setFormulary(parsed.map(normalizeFormularyDrug));
-            showToast(`تم استيراد ${parsed.length} دواء من ملف JSON بنجاح!`);
+            toImport = parsed.map(normalizeFormularyDrug);
           } else {
             showToast('صيغة ملف JSON غير صحيحة.');
+            return;
           }
         } else {
-          const importedDrugs = parseFormularyCsv(text);
-          if (importedDrugs.length > 0) {
-            setFormulary((prev) => [...importedDrugs, ...prev]);
-            showToast(`تم استيراد وإضافة ${importedDrugs.length} دواء من ملف CSV بنجاح!`);
-          } else {
-            showToast('لم يتم العثور على صفوف صالحة في ملف CSV.');
-          }
+          toImport = parseFormularyCsv(text);
+        }
+
+        if (toImport.length === 0) {
+          showToast('لم يتم العثور على أدوية صالحة في الملف.');
+          return;
+        }
+
+        const { ok, error } = await bulkUpsertMedicationsToSupabase(toImport);
+        if (ok) {
+          if (session?.userId) await loadCloudData(session.userId);
+          showToast(`تم استيراد ورفع ${toImport.length} دواء إلى Supabase بنجاح!`);
+        } else {
+          showToast(`تعذر الرفع إلى Supabase: ${error}`);
         }
       } catch {
         showToast('حدث خطأ أثناء قراءة الملف.');
@@ -523,23 +408,13 @@ export default function App() {
     e.target.value = '';
   };
 
-  const handleLoginSuccess = (newSession: PharmacistSession, remember: boolean) => {
-    if (newSession.authSource !== 'supabase') {
-      saveSession(newSession, remember);
-    }
-    setSession(newSession);
-  };
-
   const handleLogout = async () => {
-    if (session?.authSource === 'supabase') {
-      await signOutSupabase();
-    }
-    clearSession();
+    await signOutSupabase();
     setSession(null);
   };
 
   const handleSaveToCloud = async () => {
-    if (session?.authSource !== 'supabase' || !session.userId) return;
+    if (!session?.userId) return;
     setIsSavingCloud(true);
     const { record, error } = await savePatientToCloud(
       session.userId,
@@ -561,11 +436,14 @@ export default function App() {
       mrn: rec.mrn,
       ward: rec.ward,
       weightKg: rec.weight_kg,
+      ageValue: rec.age_value || '',
+      ageUnit: rec.age_unit || 'years',
+      renalImpairment: Boolean(rec.renal_impairment),
       baseDate: rec.base_date,
       defaultStartTime: rec.default_start_time,
     });
     setPatientRegimen(Array.isArray(rec.regimen) ? rec.regimen : []);
-    showToast(`تم تحميل ملف "${rec.patient_name}" من السحابة.`);
+    showToast(`تم تحميل ملف "${rec.patient_name}" من Supabase.`);
   };
 
   const handleDeleteSavedPatient = async (id: string) => {
@@ -576,8 +454,16 @@ export default function App() {
     }
   };
 
+  if (isCheckingSession) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center text-teal-300 text-sm font-bold">
+        جاري التحقق من الجلسة...
+      </div>
+    );
+  }
+
   if (!session) {
-    return <LoginPage onLoginSuccess={handleLoginSuccess} />;
+    return <LoginPage onLoginSuccess={setSession} />;
   }
 
   return (
@@ -603,11 +489,9 @@ export default function App() {
       <PatientIntakeBar
         patient={patient}
         formularyCount={formulary.length}
-        isCloudUser={session.authSource === 'supabase'}
         savedPatients={savedPatients}
         isSavingCloud={isSavingCloud}
         onChange={setPatient}
-        onLoadDemoCase={loadDemoCase}
         onClearPatient={handleClearPatient}
         onOpenPumpCalc={() => setIsPumpModalOpen(true)}
         onSaveToCloud={handleSaveToCloud}
@@ -616,97 +500,132 @@ export default function App() {
       />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+        {(formularyError || (!isLoadingFormulary && formulary.length === 0)) && (
+          <div
+            dir="rtl"
+            className="mb-5 bg-amber-50 border border-amber-300 rounded-3xl p-5 flex flex-wrap items-center justify-between gap-4 text-amber-950 shadow-2xs"
+          >
+            <div className="flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+              <div className="text-xs space-y-1">
+                <div className="font-extrabold text-sm">
+                  قاعدة بيانات الأدوية على Supabase فارغة أو لم يتم تهيئتها بعد
+                </div>
+                <p>
+                  {formularyError
+                    ? `خطأ: ${formularyError} — `
+                    : ''}
+                  قم بتشغيل ملفَي <code className="font-mono bg-white px-1.5 py-0.5 rounded">supabase/schema.sql</code> ثم{' '}
+                  <code className="font-mono bg-white px-1.5 py-0.5 rounded">supabase/seed_medications.sql</code> في Supabase SQL Editor.
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => session.userId && loadCloudData(session.userId)}
+              className="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+              <span>إعادة التحميل</span>
+            </button>
+          </div>
+        )}
+
         <Suspense
           fallback={
-            <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center text-sm font-bold text-slate-500 animate-pulse">
+            <div className="bg-white rounded-3xl border border-slate-200/80 p-12 text-center text-sm font-bold text-slate-500 animate-pulse">
               جاري تحميل الواجهة...
             </div>
           }
         >
           <div key={activeTab} className="animate-fade-in-up">
-            {activeTab === 'autofill' && (
-              <AutoFillTable
-                formulary={formulary}
-                autoFilledDrugs={autoFilledDrugs}
-                categories={categories}
-                selectedCategory={selectedCategory}
-                searchQuery={searchQuery}
-                showSelectedOnly={showSelectedOnly}
-                regimenCount={patientRegimen.length}
-                regimenDrugIds={regimenDrugIds}
-                weightKg={patient.weightKg}
-                addedFeedbackId={addedFeedbackId}
-                onSearchChange={setSearchQuery}
-                onCategoryChange={setSelectedCategory}
-                onToggleSelectedOnly={() => setShowSelectedOnly((prev) => !prev)}
-                onOpenQuickAdd={() => setIsQuickAddModalOpen(true)}
-                onOpenRegimenTab={() => setActiveTab('regimen')}
-                onSelectPreset={(drug, newPresetId) => {
-                  setSelectedPresetsByDrug((prev) => ({ ...prev, [drug.id]: newPresetId }));
-                  setInlineDoseOverrideByDrug((prev) => {
-                    const copy = { ...prev };
-                    delete copy[drug.id];
-                    return copy;
-                  });
-                  const found = drug.presets.find((p) => p.id === newPresetId);
-                  if (found) {
-                    setSelectedFreqOverrideByDrug((prev) => ({
-                      ...prev,
-                      [drug.id]: found.frequency,
-                    }));
-                  }
-                }}
-                onInlineDoseChange={(drugId, val) =>
-                  setInlineDoseOverrideByDrug((prev) => ({ ...prev, [drugId]: val }))
-                }
-                onInlineConcChange={(drugId, val) =>
-                  setInlineConcOverrideByDrug((prev) => ({ ...prev, [drugId]: val }))
-                }
-                onFreqChange={(drugId, freq) =>
-                  setSelectedFreqOverrideByDrug((prev) => ({ ...prev, [drugId]: freq }))
-                }
-                onAddDrug={handleAddDrugToPatientSheet}
-              />
-            )}
+            {isLoadingFormulary ? (
+              <div className="bg-white rounded-3xl border border-slate-200/80 p-12 text-center text-sm font-bold text-slate-500 animate-pulse">
+                جاري تحميل الأدوية من Supabase...
+              </div>
+            ) : (
+              <>
+                {activeTab === 'autofill' && (
+                  <AutoFillTable
+                    formulary={formulary}
+                    autoFilledDrugs={autoFilledDrugs}
+                    categories={categories}
+                    selectedCategory={selectedCategory}
+                    searchQuery={searchQuery}
+                    showSelectedOnly={showSelectedOnly}
+                    regimenCount={patientRegimen.length}
+                    regimenDrugIds={regimenDrugIds}
+                    weightKg={patient.weightKg}
+                    addedFeedbackId={addedFeedbackId}
+                    onSearchChange={setSearchQuery}
+                    onCategoryChange={setSelectedCategory}
+                    onToggleSelectedOnly={() => setShowSelectedOnly((prev) => !prev)}
+                    onOpenQuickAdd={() => setIsQuickAddModalOpen(true)}
+                    onOpenRegimenTab={() => setActiveTab('regimen')}
+                    onSelectPreset={(drug, newPresetId) => {
+                      setSelectedPresetsByDrug((prev) => ({
+                        ...prev,
+                        [drug.id]: newPresetId,
+                      }));
+                      setInlineDoseOverrideByDrug((prev) => {
+                        const copy = { ...prev };
+                        delete copy[drug.id];
+                        return copy;
+                      });
+                      const found = drug.presets.find((p) => p.id === newPresetId);
+                      if (found) {
+                        setSelectedFreqOverrideByDrug((prev) => ({
+                          ...prev,
+                          [drug.id]: found.frequency,
+                        }));
+                      }
+                    }}
+                    onInlineDoseChange={(drugId, val) =>
+                      setInlineDoseOverrideByDrug((prev) => ({ ...prev, [drugId]: val }))
+                    }
+                    onInlineConcChange={(drugId, val) =>
+                      setInlineConcOverrideByDrug((prev) => ({ ...prev, [drugId]: val }))
+                    }
+                    onFreqChange={(drugId, freq) =>
+                      setSelectedFreqOverrideByDrug((prev) => ({ ...prev, [drugId]: freq }))
+                    }
+                    onAddDrug={handleAddDrugToPatientSheet}
+                  />
+                )}
 
-            {activeTab === 'regimen' && (
-              <PatientRegimenSheet
-                patient={patient}
-                computedRegimen={computedPatientRegimen}
-                stickersCount={allThermalStickers.length}
-                onGoToAutoFill={() => setActiveTab('autofill')}
-                onExportCsv={handleExportPatientExcel}
-                onGoToLabels={() => setActiveTab('labels')}
-                onUpdateItem={handleUpdateRegimenItem}
-                onRemoveItem={handleRemoveRegimenItem}
-              />
-            )}
+                {activeTab === 'regimen' && (
+                  <PatientRegimenSheet
+                    patient={patient}
+                    computedRegimen={computedPatientRegimen}
+                    stickersCount={allThermalStickers.length}
+                    onGoToAutoFill={() => setActiveTab('autofill')}
+                    onExportCsv={handleExportPatientExcel}
+                    onGoToLabels={() => setActiveTab('labels')}
+                    onUpdateItem={handleUpdateRegimenItem}
+                    onRemoveItem={handleRemoveRegimenItem}
+                  />
+                )}
 
-            {activeTab === 'labels' && (
-              <ThermalLabelsView
-                stickers={allThermalStickers}
-                stickerSize={stickerSize}
-                onStickerSizeChange={setStickerSize}
-                onGoToAutoFill={() => setActiveTab('autofill')}
-              />
-            )}
+                {activeTab === 'labels' && (
+                  <ThermalLabelsView
+                    stickers={allThermalStickers}
+                    stickerSize={stickerSize}
+                    onStickerSizeChange={setStickerSize}
+                    onGoToAutoFill={() => setActiveTab('autofill')}
+                  />
+                )}
 
-            {activeTab === 'config' && (
-              <PrepStandardsView
-                formulary={formulary}
-                newDrugForm={newDrugForm}
-                onNewDrugFormChange={setNewDrugForm}
-                onAddNewDrug={handleAddNewFormularyDrug}
-                onSaveDrugEdit={handleSaveMasterDrugEdit}
-                onExportJson={handleExportMasterJson}
-                onImportFile={handleImportMasterFile}
-                onResetDefault={() => {
-                  setFormulary(INITIAL_PHARMACY_FORMULARY);
-                  showToast(
-                    `تم استعادة الموسوعة الافتراضية (${INITIAL_PHARMACY_FORMULARY.length} دواء).`
-                  );
-                }}
-              />
+                {activeTab === 'config' && (
+                  <PrepStandardsView
+                    formulary={formulary}
+                    newDrugForm={newDrugForm}
+                    onNewDrugFormChange={setNewDrugForm}
+                    onAddNewDrug={handleAddNewFormularyDrug}
+                    onSaveDrugEdit={handleSaveMasterDrugEdit}
+                    onExportJson={handleExportMasterJson}
+                    onImportFile={handleImportMasterFile}
+                  />
+                )}
+              </>
             )}
           </div>
         </Suspense>

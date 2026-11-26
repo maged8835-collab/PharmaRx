@@ -1,28 +1,22 @@
 import { useState } from 'react';
 import {
   AlertTriangle,
-  ChevronDown,
   CloudUpload,
   FolderOpen,
   Gauge,
   RotateCcw,
-  Sparkles,
   Trash2,
   User,
 } from 'lucide-react';
 import type { AgeUnit, PatientInfo, SavedPatientRecord } from '../types/pharmacy';
 import { isNeonatePatient } from '../utils/clinicalSafety';
 
-export type DemoCaseType = 'lasix_3kg' | 'baraa' | 'mohamed' | 'fares_vanco';
-
 interface PatientIntakeBarProps {
   patient: PatientInfo;
   formularyCount: number;
-  isCloudUser: boolean;
   savedPatients: SavedPatientRecord[];
   isSavingCloud: boolean;
   onChange: (updated: PatientInfo) => void;
-  onLoadDemoCase: (caseType: DemoCaseType) => void;
   onClearPatient: () => void;
   onOpenPumpCalc: () => void;
   onSaveToCloud: () => void;
@@ -33,25 +27,21 @@ interface PatientIntakeBarProps {
 export function PatientIntakeBar({
   patient,
   formularyCount,
-  isCloudUser,
   savedPatients,
   isSavingCloud,
   onChange,
-  onLoadDemoCase,
   onClearPatient,
   onOpenPumpCalc,
   onSaveToCloud,
   onLoadSavedPatient,
   onDeleteSavedPatient,
 }: PatientIntakeBarProps) {
-  const [showCasesMenu, setShowCasesMenu] = useState(false);
   const [showSavedList, setShowSavedList] = useState(false);
   const neonate = isNeonatePatient(patient);
 
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 pt-5">
       <div className="bg-white rounded-3xl border border-slate-200/80 shadow-[0_2px_16px_rgba(15,23,42,0.04)] p-4 sm:p-5 space-y-4">
-        {/* Top Row: Title + Compact Action Pills */}
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center">
@@ -62,51 +52,12 @@ export function PatientIntakeBar({
                 Patient Profile
               </h2>
               <p className="text-[11px] text-slate-400 font-medium" dir="rtl">
-                حساب لحظي لـ {formularyCount} دواء عند تعديل الوزن
+                حساب لحظي لـ {formularyCount} دواء من Supabase عند تعديل الوزن
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-2 flex-wrap">
-            {/* Quick Cases Dropdown */}
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => {
-                  setShowCasesMenu((p) => !p);
-                  setShowSavedList(false);
-                }}
-                className="px-3 py-1.5 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
-              >
-                <Sparkles className="w-3.5 h-3.5 text-teal-600" />
-                <span>Quick Cases</span>
-                <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
-              </button>
-
-              {showCasesMenu && (
-                <div className="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-slate-200 p-1.5 z-30 animate-scale-in">
-                  {[
-                    { id: 'lasix_3kg' as DemoCaseType, label: 'يوسف — Furosemide (3 kg)' },
-                    { id: 'baraa' as DemoCaseType, label: 'براء — قسطرة (21 kg)' },
-                    { id: 'mohamed' as DemoCaseType, label: 'محمد علي — WARD (36 kg)' },
-                    { id: 'fares_vanco' as DemoCaseType, label: 'فارس — Vancomycin (36 kg)' },
-                  ].map((c) => (
-                    <button
-                      key={c.id}
-                      onClick={() => {
-                        onLoadDemoCase(c.id);
-                        setShowCasesMenu(false);
-                      }}
-                      className="w-full text-right px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:bg-teal-50 hover:text-teal-800 transition-colors cursor-pointer"
-                      dir="rtl"
-                    >
-                      {c.label}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
             <button
               onClick={onOpenPumpCalc}
               className="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all hover:-translate-y-0.5 cursor-pointer"
@@ -115,29 +66,22 @@ export function PatientIntakeBar({
               <span>Pump mL/hr</span>
             </button>
 
-            {isCloudUser && (
-              <>
-                <button
-                  onClick={onSaveToCloud}
-                  disabled={isSavingCloud}
-                  className="px-3 py-1.5 rounded-xl bg-teal-600 hover:bg-teal-700 disabled:opacity-60 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm shadow-teal-600/20 transition-all hover:-translate-y-0.5 cursor-pointer"
-                >
-                  <CloudUpload className="w-3.5 h-3.5" />
-                  <span>{isSavingCloud ? 'Saving...' : 'حفظ سحابياً'}</span>
-                </button>
+            <button
+              onClick={onSaveToCloud}
+              disabled={isSavingCloud}
+              className="px-3 py-1.5 rounded-xl bg-teal-600 hover:bg-teal-700 disabled:opacity-60 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm shadow-teal-600/20 transition-all hover:-translate-y-0.5 cursor-pointer"
+            >
+              <CloudUpload className="w-3.5 h-3.5" />
+              <span>{isSavingCloud ? 'Saving...' : 'حفظ سحابياً'}</span>
+            </button>
 
-                <button
-                  onClick={() => {
-                    setShowSavedList((p) => !p);
-                    setShowCasesMenu(false);
-                  }}
-                  className="px-3 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200/80 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
-                >
-                  <FolderOpen className="w-3.5 h-3.5" />
-                  <span>المحفوظون ({savedPatients.length})</span>
-                </button>
-              </>
-            )}
+            <button
+              onClick={() => setShowSavedList((p) => !p)}
+              className="px-3 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200/80 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
+            >
+              <FolderOpen className="w-3.5 h-3.5" />
+              <span>المحفوظون ({savedPatients.length})</span>
+            </button>
 
             <button
               onClick={onClearPatient}
@@ -149,8 +93,7 @@ export function PatientIntakeBar({
           </div>
         </div>
 
-        {/* Cloud Saved Patients Drawer */}
-        {isCloudUser && showSavedList && (
+        {showSavedList && (
           <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 animate-fade-in-up">
             <div className="text-xs font-bold text-slate-700 mb-2" dir="rtl">
               سجل المرضى المحفوظ على Supabase:
@@ -189,7 +132,6 @@ export function PatientIntakeBar({
           </div>
         )}
 
-        {/* Main Patient Fields */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3 items-end">
           <div className="lg:col-span-4">
             <label className="block text-[11px] font-bold text-slate-500 mb-1 flex justify-between">
@@ -234,7 +176,6 @@ export function PatientIntakeBar({
             />
           </div>
 
-          {/* Hero Weight Input */}
           <div className="lg:col-span-2">
             <label className="block text-[11px] font-extrabold text-teal-700 mb-1 flex justify-between">
               <span>WEIGHT*</span>
@@ -284,7 +225,6 @@ export function PatientIntakeBar({
           </div>
         </div>
 
-        {/* Clinical Guardrail Strip */}
         <div className="pt-3 border-t border-slate-100 flex flex-wrap items-center gap-3 text-xs">
           <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200/80 px-2.5 py-1 rounded-xl">
             <span className="font-bold text-slate-500">Age:</span>

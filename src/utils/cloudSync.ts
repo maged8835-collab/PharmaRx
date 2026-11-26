@@ -1,5 +1,7 @@
 import { supabase } from '../lib/supabase';
 import type {
+  DoseUnit,
+  DrugPreset,
   FormularyDrug,
   PatientInfo,
   PharmacistSession,
@@ -7,6 +9,64 @@ import type {
   SavedPatientRecord,
 } from '../types/pharmacy';
 import { normalizeFormularyDrug } from './storage';
+
+interface MedicationRow {
+  id: string;
+  trade_name: string;
+  generic_name: string;
+  arabic_name: string;
+  category: string;
+  diluent: string;
+  prep_instructions: string;
+  final_conc_mg_ml: number;
+  dose_unit: DoseUnit;
+  high_alert: boolean;
+  route: string;
+  stability: string;
+  reference: string;
+  is_custom: boolean;
+  presets: DrugPreset[];
+}
+
+function rowToFormularyDrug(row: MedicationRow): FormularyDrug {
+  return normalizeFormularyDrug({
+    id: row.id,
+    tradeName: row.trade_name,
+    genericName: row.generic_name,
+    arabicName: row.arabic_name,
+    category: row.category,
+    diluent: row.diluent,
+    prepInstructions: row.prep_instructions,
+    finalConcMgMl: Number(row.final_conc_mg_ml),
+    doseUnit: row.dose_unit,
+    highAlert: row.high_alert,
+    route: row.route,
+    stability: row.stability,
+    reference: row.reference,
+    isCustom: row.is_custom,
+    presets: row.presets,
+  });
+}
+
+function formularyDrugToRow(d: FormularyDrug): MedicationRow {
+  return {
+    id: d.id,
+    trade_name: d.tradeName || d.genericName,
+    generic_name: d.genericName,
+    arabic_name: d.arabicName || d.genericName,
+    category: d.category,
+    diluent: d.diluent,
+    prep_instructions: d.prepInstructions,
+    final_conc_mg_ml: Number(d.finalConcMgMl) || 1,
+    dose_unit: d.doseUnit || 'mg',
+    high_alert: Boolean(d.highAlert),
+    route: d.route,
+    stability: d.stability,
+    reference: d.reference,
+    is_custom: Boolean(d.isCustom),
+    presets: d.presets || [],
+  };
+}
 
 export async function signInWithSupabaseEmail(
   email: string,
@@ -120,36 +180,51 @@ export async function signOutSupabase(): Promise<void> {
   await supabase.auth.signOut();
 }
 
-export async function fetchCloudFormulary(
-  userId: string
-): Promise<FormularyDrug[] | null> {
-  if (!supabase) return null;
-  const { data, error } = await supabase
-    .from('pharmacy_formulary_state')
-    .select('formulary')
-    .eq('user_id', userId)
-    .maybeSingle();
-
-  if (error || !data || !Array.isArray(data.formulary) || data.formulary.length === 0) {
-    return null;
+export async function fetchMedicationsFromSupabase(): Promise<{
+  drugs: FormularyDrug[];
+  error: string | null;
+}> {
+  if (!supabase) {
+    return { drugs: [], error: 'Supabase غير متصل.' };
   }
-  return data.formulary.map(normalizeFormularyDrug);
+  const { data, error } = await supabase
+    .from('medications')
+    .select('*')
+    .order('category', { ascending: true })
+    .order('generic_name', { ascending: true });
+
+  if (error) {
+    return { drugs: [], error: error.message };
+  }
+
+  return {
+    drugs: Array.isArray(data) ? (data as MedicationRow[]).map(rowToFormularyDrug) : [],
+    error: null,
+  };
 }
 
-export async function saveCloudFormulary(
-  userId: string,
-  formulary: FormularyDrug[]
-): Promise<boolean> {
-  if (!supabase) return false;
-  const { error } = await supabase.from('pharmacy_formulary_state').upsert(
-    {
-      user_id: userId,
-      formulary,
-      updated_at: new Date().toISOString(),
-    },
-    { onConflict: 'user_id' }
-  );
-  return !error;
+export async function upsertMedicationToSupabase(
+  drug: FormularyDrug
+): Promise<{ ok: boolean; error: string | null }> {
+  if (!supabase) return { ok: false, error: 'Supabase غير متصل.' };
+  const { error } = await supabase
+    .from('medications')
+    .upsert({ ...formularyDrugToRow(drug), updated_at: new Date().toISOString() }, { onConflict: 'id' });
+  return { ok: !error, error: error?.message || null };
+}
+
+export async function bulkUpsertMedicationsToSupabase(
+  drugs: FormularyDrug[]
+): Promise<{ ok: boolean; error: string | null }> {
+  if (!supabase) return { ok: false, error: 'Supabase غير متصل.' };
+  const rows = drugs.map((d) => ({
+    ...formularyDrugToRow(d),
+    updated_at: new Date().toISOString(),
+  }));
+  const { error } = await supabase
+    .from('medications')
+    .upsert(rows, { onConflict: 'id' });
+  return { ok: !error, error: error?.message || null };
 }
 
 export async function fetchSavedPatients(
@@ -183,6 +258,9 @@ export async function savePatientToCloud(
       mrn: patient.mrn || '',
       ward: patient.ward || '',
       weight_kg: Number(patient.weightKg) || 10,
+      age_value: String(patient.ageValue ?? ''),
+      age_unit: patient.ageUnit || 'years',
+      renal_impairment: Boolean(patient.renalImpairment),
       base_date: patient.baseDate,
       default_start_time: patient.defaultStartTime,
       regimen,

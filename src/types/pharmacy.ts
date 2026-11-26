@@ -25,6 +25,9 @@ export interface SavedPatientRecord {
   mrn: string;
   ward: string;
   weight_kg: number;
+  age_value?: string;
+  age_unit?: AgeUnit;
+  renal_impairment?: boolean;
   base_date: string;
   default_start_time: string;
   regimen: RegimenItem[];
