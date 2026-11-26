@@ -26,11 +26,15 @@ export function LoginPage({ onLoginSuccess }: LoginPageProps) {
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 flex flex-col justify-center items-center p-4">
-      <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden">
+    <div className="relative min-h-screen overflow-hidden bg-slate-950 flex flex-col justify-center items-center p-4">
+      {/* Ambient animated gradient orbs */}
+      <div className="pointer-events-none absolute -top-24 -left-24 w-96 h-96 rounded-full bg-teal-500/20 blur-3xl animate-float-slow" />
+      <div className="pointer-events-none absolute -bottom-24 -right-24 w-96 h-96 rounded-full bg-cyan-500/15 blur-3xl animate-float-slow-reverse" />
+
+      <div className="relative z-10 w-full max-w-md bg-white rounded-3xl shadow-2xl shadow-black/50 border border-slate-200/80 overflow-hidden animate-scale-in">
         {/* Header */}
-        <div className="bg-slate-950 text-white px-6 py-6 text-center space-y-2 border-b border-slate-800">
-          <div className="inline-flex items-center justify-center bg-teal-500/20 border border-teal-400/30 p-3 rounded-2xl mb-1">
+        <div className="bg-gradient-to-br from-slate-950 via-slate-900 to-teal-950 text-white px-6 py-7 text-center space-y-2 border-b border-slate-800">
+          <div className="inline-flex items-center justify-center bg-teal-500/20 border border-teal-400/30 p-3.5 rounded-2xl mb-1 shadow-lg shadow-teal-500/10">
             <Syringe className="w-7 h-7 text-teal-300" />
           </div>
           <h1 className="text-2xl font-extrabold tracking-tight">
@@ -114,7 +118,7 @@ export function LoginPage({ onLoginSuccess }: LoginPageProps) {
 
           <button
             type="submit"
-            className="w-full py-3 bg-teal-600 hover:bg-teal-700 text-white font-extrabold text-sm rounded-xl shadow-sm transition-colors flex items-center justify-center gap-2"
+            className="w-full py-3 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white font-extrabold text-sm rounded-xl shadow-md shadow-teal-600/25 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer"
           >
             <ShieldCheck className="w-4 h-4" />
             <span>دخول إلى المنصة | Sign In</span>
@@ -122,7 +126,7 @@ export function LoginPage({ onLoginSuccess }: LoginPageProps) {
         </form>
       </div>
 
-      <p className="mt-4 text-[11px] text-slate-400 text-center">
+      <p className="relative z-10 mt-5 text-[11px] text-slate-400 text-center">
         PediaSurgRx Clinical Pharmacy System • Local Access Protection
       </p>
     </div>

@@ -480,7 +480,7 @@ export default function App() {
       />
 
       {configToast && (
-        <div className="bg-emerald-800 text-white px-4 py-2.5 text-xs font-bold text-center flex items-center justify-center gap-2">
+        <div className="bg-gradient-to-r from-emerald-800 to-teal-800 text-white px-4 py-2.5 text-xs font-bold text-center flex items-center justify-center gap-2 shadow-md animate-fade-in-up">
           <CheckCircle2 className="w-4 h-4 text-emerald-300" />
           <span>{configToast}</span>
         </div>
@@ -495,7 +495,8 @@ export default function App() {
       />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
-        {activeTab === 'autofill' && (
+        <div key={activeTab} className="animate-fade-in-up">
+          {activeTab === 'autofill' && (
           <AutoFillTable
             formulary={formulary}
             autoFilledDrugs={autoFilledDrugs}
@@ -581,6 +582,7 @@ export default function App() {
             }}
           />
         )}
+        </div>
       </main>
 
       <QuickAddModal

@@ -34,31 +34,31 @@ export function PatientIntakeBar({
             <span className="text-slate-400 font-semibold">Quick Cases:</span>
             <button
               onClick={() => onLoadDemoCase('lasix_3kg')}
-              className="px-2.5 py-1 rounded-md bg-slate-100 hover:bg-teal-50 text-slate-700 hover:text-teal-800 border border-slate-200 font-semibold"
+              className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-teal-50 text-slate-700 hover:text-teal-800 border border-slate-200 hover:border-teal-300 font-semibold transition-all duration-150 hover:-translate-y-0.5 cursor-pointer"
             >
               يوسف (Lasix 3 kg = 1.5 mL)
             </button>
             <button
               onClick={() => onLoadDemoCase('baraa')}
-              className="px-2.5 py-1 rounded-md bg-slate-100 hover:bg-teal-50 text-slate-700 hover:text-teal-800 border border-slate-200 font-semibold"
+              className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-teal-50 text-slate-700 hover:text-teal-800 border border-slate-200 hover:border-teal-300 font-semibold transition-all duration-150 hover:-translate-y-0.5 cursor-pointer"
             >
               براء (قسطرة - 21 kg)
             </button>
             <button
               onClick={() => onLoadDemoCase('mohamed')}
-              className="px-2.5 py-1 rounded-md bg-slate-100 hover:bg-teal-50 text-slate-700 hover:text-teal-800 border border-slate-200 font-semibold"
+              className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-teal-50 text-slate-700 hover:text-teal-800 border border-slate-200 hover:border-teal-300 font-semibold transition-all duration-150 hover:-translate-y-0.5 cursor-pointer"
             >
               محمد علي (WARD - 36 kg)
             </button>
             <button
               onClick={() => onLoadDemoCase('fares_vanco')}
-              className="px-2.5 py-1 rounded-md bg-slate-100 hover:bg-teal-50 text-slate-700 hover:text-teal-800 border border-slate-200 font-semibold"
+              className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-teal-50 text-slate-700 hover:text-teal-800 border border-slate-200 hover:border-teal-300 font-semibold transition-all duration-150 hover:-translate-y-0.5 cursor-pointer"
             >
               فارس (Vancomycin 36 kg = 144 mL)
             </button>
             <button
               onClick={onClearPatient}
-              className="px-2.5 py-1 rounded-md bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-semibold flex items-center gap-1"
+              className="px-2.5 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-semibold flex items-center gap-1 transition-all duration-150 hover:-translate-y-0.5 cursor-pointer"
               title="Clear current patient & regimen"
             >
               <RotateCcw className="w-3 h-3" />

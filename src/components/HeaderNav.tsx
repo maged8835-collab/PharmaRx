@@ -35,10 +35,10 @@ export function HeaderNav({
   ];
 
   return (
-    <header className="bg-slate-900 text-white shadow-md sticky top-0 z-30">
+    <header className="bg-slate-900/95 backdrop-blur-md text-white shadow-lg shadow-slate-950/15 sticky top-0 z-30 border-b border-teal-500/20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="bg-teal-500/20 border border-teal-400/30 p-2 rounded-xl">
+          <div className="bg-gradient-to-br from-teal-500/25 to-emerald-500/15 border border-teal-400/35 p-2 rounded-xl shadow-inner">
             <Syringe className="w-6 h-6 text-teal-300" />
           </div>
           <div>
@@ -64,10 +64,10 @@ export function HeaderNav({
               <button
                 key={tab.id}
                 onClick={() => onTabChange(tab.id)}
-                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all whitespace-nowrap ${
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all duration-200 whitespace-nowrap cursor-pointer ${
                   isActive
-                    ? 'bg-teal-500 text-slate-950 shadow-sm'
-                    : 'text-slate-200 hover:bg-slate-700'
+                    ? 'bg-gradient-to-r from-teal-400 to-emerald-400 text-slate-950 shadow-md shadow-teal-500/25 scale-[1.02]'
+                    : 'text-slate-200 hover:bg-slate-700/80 hover:text-white'
                 }`}
               >
                 <Icon className="w-4 h-4" />
