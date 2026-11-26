@@ -54,7 +54,7 @@ export function PatientRegimenSheet({
 
   return (
     <div className="space-y-5">
-      <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs flex flex-wrap items-center justify-between gap-4">
+      <div className="bg-white p-5 sm:p-6 rounded-3xl border border-slate-200/80 shadow-[0_2px_16px_rgba(15,23,42,0.03)] flex flex-wrap items-center justify-between gap-4">
         <div>
           <h2 className="text-lg font-extrabold text-slate-900 flex items-center gap-2">
             <FileSpreadsheet className="w-5 h-5 text-emerald-600" />
@@ -186,8 +186,8 @@ export function PatientRegimenSheet({
             return (
               <div
                 key={item.regimenId}
-                className={`bg-white rounded-2xl border shadow-2xs p-5 transition-all ${
-                  item.highAlert ? 'border-rose-300' : 'border-slate-200'
+                className={`bg-white rounded-3xl border shadow-[0_2px_16px_rgba(15,23,42,0.03)] p-5 sm:p-6 transition-all hover:shadow-[0_4px_20px_rgba(15,23,42,0.06)] ${
+                  item.highAlert ? 'border-rose-300/80' : 'border-slate-200/80'
                 }`}
               >
                 <div className="flex flex-wrap items-start justify-between gap-4 pb-4 border-b border-slate-100">

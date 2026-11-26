@@ -59,7 +59,7 @@ export function PrepStandardsView({
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-      <div className="lg:col-span-5 bg-white rounded-2xl border border-slate-200 shadow-2xs p-5 space-y-4">
+      <div className="lg:col-span-5 bg-white rounded-3xl border border-slate-200/80 shadow-[0_2px_16px_rgba(15,23,42,0.03)] p-5 sm:p-6 space-y-4">
         <div className="border-b border-slate-100 pb-3">
           <h2 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
             <Plus className="w-5 h-5 text-teal-600" />
@@ -322,7 +322,7 @@ export function PrepStandardsView({
         </div>
       </div>
 
-      <div className="lg:col-span-7 bg-white rounded-2xl border border-slate-200 shadow-2xs p-5">
+      <div className="lg:col-span-7 bg-white rounded-3xl border border-slate-200/80 shadow-[0_2px_16px_rgba(15,23,42,0.03)] p-5 sm:p-6">
         <div className="border-b border-slate-100 pb-3 mb-3 flex items-center justify-between">
           <div>
             <h2 className="text-base font-extrabold text-slate-900">

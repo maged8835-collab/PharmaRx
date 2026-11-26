@@ -1,5 +1,15 @@
 import { useState } from 'react';
-import { AlertTriangle, CloudUpload, FolderOpen, Gauge, RotateCcw, Trash2, User } from 'lucide-react';
+import {
+  AlertTriangle,
+  ChevronDown,
+  CloudUpload,
+  FolderOpen,
+  Gauge,
+  RotateCcw,
+  Sparkles,
+  Trash2,
+  User,
+} from 'lucide-react';
 import type { AgeUnit, PatientInfo, SavedPatientRecord } from '../types/pharmacy';
 import { isNeonatePatient } from '../utils/clinicalSafety';
 
@@ -34,46 +44,75 @@ export function PatientIntakeBar({
   onLoadSavedPatient,
   onDeleteSavedPatient,
 }: PatientIntakeBarProps) {
+  const [showCasesMenu, setShowCasesMenu] = useState(false);
   const [showSavedList, setShowSavedList] = useState(false);
   const neonate = isNeonatePatient(patient);
 
   return (
-    <section className="bg-white border-b border-slate-200 shadow-2xs">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
-        <div className="flex flex-wrap items-center justify-between gap-2 mb-3 pb-2 border-b border-slate-100">
-          <div className="flex items-center gap-2 text-xs font-bold text-slate-600">
-            <User className="w-4 h-4 text-teal-600" />
-            <span>
-              PATIENT INTAKE (تغيير الوزن يعيد حساب جميع أدوية الصيدلية الـ{' '}
-              {formularyCount} لحظياً)
-            </span>
+    <section className="max-w-7xl mx-auto px-4 sm:px-6 pt-5">
+      <div className="bg-white rounded-3xl border border-slate-200/80 shadow-[0_2px_16px_rgba(15,23,42,0.04)] p-4 sm:p-5 space-y-4">
+        {/* Top Row: Title + Compact Action Pills */}
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center">
+              <User className="w-4 h-4" />
+            </div>
+            <div>
+              <h2 className="text-xs font-extrabold uppercase tracking-wider text-slate-800">
+                Patient Profile
+              </h2>
+              <p className="text-[11px] text-slate-400 font-medium" dir="rtl">
+                حساب لحظي لـ {formularyCount} دواء عند تعديل الوزن
+              </p>
+            </div>
           </div>
 
-          <div className="flex items-center gap-1.5 flex-wrap text-[11px]">
-            <span className="text-slate-400 font-semibold">Quick Cases:</span>
+          <div className="flex items-center gap-2 flex-wrap">
+            {/* Quick Cases Dropdown */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowCasesMenu((p) => !p);
+                  setShowSavedList(false);
+                }}
+                className="px-3 py-1.5 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-teal-600" />
+                <span>Quick Cases</span>
+                <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+              </button>
+
+              {showCasesMenu && (
+                <div className="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-slate-200 p-1.5 z-30 animate-scale-in">
+                  {[
+                    { id: 'lasix_3kg' as DemoCaseType, label: 'يوسف — Furosemide (3 kg)' },
+                    { id: 'baraa' as DemoCaseType, label: 'براء — قسطرة (21 kg)' },
+                    { id: 'mohamed' as DemoCaseType, label: 'محمد علي — WARD (36 kg)' },
+                    { id: 'fares_vanco' as DemoCaseType, label: 'فارس — Vancomycin (36 kg)' },
+                  ].map((c) => (
+                    <button
+                      key={c.id}
+                      onClick={() => {
+                        onLoadDemoCase(c.id);
+                        setShowCasesMenu(false);
+                      }}
+                      className="w-full text-right px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:bg-teal-50 hover:text-teal-800 transition-colors cursor-pointer"
+                      dir="rtl"
+                    >
+                      {c.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <button
-              onClick={() => onLoadDemoCase('lasix_3kg')}
-              className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-teal-50 text-slate-700 hover:text-teal-800 border border-slate-200 hover:border-teal-300 font-semibold transition-all duration-150 hover:-translate-y-0.5 cursor-pointer"
+              onClick={onOpenPumpCalc}
+              className="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all hover:-translate-y-0.5 cursor-pointer"
             >
-              يوسف (Lasix 3 kg = 1.5 mL)
-            </button>
-            <button
-              onClick={() => onLoadDemoCase('baraa')}
-              className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-teal-50 text-slate-700 hover:text-teal-800 border border-slate-200 hover:border-teal-300 font-semibold transition-all duration-150 hover:-translate-y-0.5 cursor-pointer"
-            >
-              براء (قسطرة - 21 kg)
-            </button>
-            <button
-              onClick={() => onLoadDemoCase('mohamed')}
-              className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-teal-50 text-slate-700 hover:text-teal-800 border border-slate-200 hover:border-teal-300 font-semibold transition-all duration-150 hover:-translate-y-0.5 cursor-pointer"
-            >
-              محمد علي (WARD - 36 kg)
-            </button>
-            <button
-              onClick={() => onLoadDemoCase('fares_vanco')}
-              className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-teal-50 text-slate-700 hover:text-teal-800 border border-slate-200 hover:border-teal-300 font-semibold transition-all duration-150 hover:-translate-y-0.5 cursor-pointer"
-            >
-              فارس (Vancomycin 36 kg = 144 mL)
+              <Gauge className="w-3.5 h-3.5 text-teal-400" />
+              <span>Pump mL/hr</span>
             </button>
 
             {isCloudUser && (
@@ -81,45 +120,38 @@ export function PatientIntakeBar({
                 <button
                   onClick={onSaveToCloud}
                   disabled={isSavingCloud}
-                  className="px-2.5 py-1 rounded-lg bg-teal-600 hover:bg-teal-700 disabled:opacity-60 text-white font-bold flex items-center gap-1 transition-all duration-150 hover:-translate-y-0.5 cursor-pointer"
-                  title="Save patient & regimen to Supabase"
+                  className="px-3 py-1.5 rounded-xl bg-teal-600 hover:bg-teal-700 disabled:opacity-60 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm shadow-teal-600/20 transition-all hover:-translate-y-0.5 cursor-pointer"
                 >
                   <CloudUpload className="w-3.5 h-3.5" />
                   <span>{isSavingCloud ? 'Saving...' : 'حفظ سحابياً'}</span>
                 </button>
 
                 <button
-                  onClick={() => setShowSavedList((prev) => !prev)}
-                  className="px-2.5 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-800 border border-indigo-200 font-bold flex items-center gap-1 transition-all duration-150 cursor-pointer"
+                  onClick={() => {
+                    setShowSavedList((p) => !p);
+                    setShowCasesMenu(false);
+                  }}
+                  className="px-3 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200/80 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
                 >
                   <FolderOpen className="w-3.5 h-3.5" />
-                  <span>المرضى المحفوظون ({savedPatients.length})</span>
+                  <span>المحفوظون ({savedPatients.length})</span>
                 </button>
               </>
             )}
 
             <button
-              onClick={onOpenPumpCalc}
-              className="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-teal-300 font-bold flex items-center gap-1 transition-all duration-150 hover:-translate-y-0.5 cursor-pointer"
-              title="Open Continuous Syringe Pump Calculator (mL/hr)"
-            >
-              <Gauge className="w-3.5 h-3.5" />
-              <span>Pump mL/hr</span>
-            </button>
-
-            <button
               onClick={onClearPatient}
-              className="px-2.5 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-semibold flex items-center gap-1 transition-all duration-150 hover:-translate-y-0.5 cursor-pointer"
-              title="Clear current patient & regimen"
+              className="px-3 py-1.5 rounded-xl bg-rose-50/80 hover:bg-rose-100 text-rose-600 border border-rose-200/70 text-xs font-bold flex items-center gap-1 transition-colors cursor-pointer"
             >
-              <RotateCcw className="w-3 h-3" />
-              <span>New Patient</span>
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span>New</span>
             </button>
           </div>
         </div>
 
+        {/* Cloud Saved Patients Drawer */}
         {isCloudUser && showSavedList && (
-          <div className="mb-3 p-3 rounded-xl bg-slate-50 border border-slate-200 animate-fade-in-up">
+          <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 animate-fade-in-up">
             <div className="text-xs font-bold text-slate-700 mb-2" dir="rtl">
               سجل المرضى المحفوظ على Supabase:
             </div>
@@ -132,7 +164,7 @@ export function PatientIntakeBar({
                 {savedPatients.map((rec) => (
                   <div
                     key={rec.id}
-                    className="flex items-center gap-2 bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs shadow-2xs"
+                    className="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs shadow-2xs"
                   >
                     <button
                       onClick={() => {
@@ -145,7 +177,7 @@ export function PatientIntakeBar({
                     </button>
                     <button
                       onClick={() => onDeleteSavedPatient(rec.id)}
-                      className="text-rose-500 hover:text-rose-700 p-0.5 cursor-pointer"
+                      className="text-rose-400 hover:text-rose-600 p-0.5 cursor-pointer"
                       title="Delete saved patient"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -157,11 +189,12 @@ export function PatientIntakeBar({
           </div>
         )}
 
+        {/* Main Patient Fields */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3 items-end">
           <div className="lg:col-span-4">
-            <label className="block text-[11px] font-bold text-slate-600 mb-1 flex justify-between">
-              <span>Patient Full Name</span>
-              <span dir="rtl">اسم المريض بالكامل</span>
+            <label className="block text-[11px] font-bold text-slate-500 mb-1 flex justify-between">
+              <span>Patient Name</span>
+              <span dir="rtl">اسم المريض</span>
             </label>
             <input
               type="text"
@@ -169,13 +202,13 @@ export function PatientIntakeBar({
               value={patient.fullName}
               onChange={(e) => onChange({ ...patient, fullName: e.target.value })}
               placeholder="اسم المريض..."
-              className="w-full px-3 py-2 text-sm font-bold bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none"
+              className="w-full px-3.5 py-2.5 text-sm font-bold bg-slate-50/70 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-teal-500/25 focus:border-teal-500 outline-none transition-all"
             />
           </div>
 
           <div className="lg:col-span-2">
-            <label className="block text-[11px] font-bold text-slate-600 mb-1 flex justify-between">
-              <span>Patient ID / MRN</span>
+            <label className="block text-[11px] font-bold text-slate-500 mb-1 flex justify-between">
+              <span>MRN / ID</span>
               <span dir="rtl">رقم الملف</span>
             </label>
             <input
@@ -183,27 +216,28 @@ export function PatientIntakeBar({
               value={patient.mrn}
               onChange={(e) => onChange({ ...patient, mrn: e.target.value })}
               placeholder="20234098"
-              className="w-full px-3 py-2 text-sm font-bold font-mono tabular-nums bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-teal-500 outline-none"
+              className="w-full px-3 py-2.5 text-sm font-bold font-mono tabular-nums bg-slate-50/70 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-teal-500/25 focus:border-teal-500 outline-none transition-all"
             />
           </div>
 
           <div className="lg:col-span-2">
-            <label className="block text-[11px] font-bold text-slate-600 mb-1 flex justify-between">
-              <span>Ward / Unit</span>
+            <label className="block text-[11px] font-bold text-slate-500 mb-1 flex justify-between">
+              <span>Ward</span>
               <span dir="rtl">القسم</span>
             </label>
             <input
               type="text"
               value={patient.ward}
               onChange={(e) => onChange({ ...patient, ward: e.target.value })}
-              placeholder="WARD / قسطرة"
-              className="w-full px-3 py-2 text-sm font-bold bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-teal-500 outline-none"
+              placeholder="PICU / قسطرة"
+              className="w-full px-3 py-2.5 text-sm font-bold bg-slate-50/70 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-teal-500/25 focus:border-teal-500 outline-none transition-all"
             />
           </div>
 
+          {/* Hero Weight Input */}
           <div className="lg:col-span-2">
-            <label className="block text-[11px] font-extrabold text-teal-800 mb-1 flex justify-between">
-              <span>WEIGHT (kg)*</span>
+            <label className="block text-[11px] font-extrabold text-teal-700 mb-1 flex justify-between">
+              <span>WEIGHT*</span>
               <span dir="rtl">الوزن (كجم)</span>
             </label>
             <div className="relative">
@@ -214,7 +248,7 @@ export function PatientIntakeBar({
                 max="250"
                 value={patient.weightKg}
                 onChange={(e) => onChange({ ...patient, weightKg: e.target.value })}
-                className="w-full px-3 py-2 text-base font-black font-mono tabular-nums bg-teal-50 border-2 border-teal-600 text-teal-950 rounded-xl focus:ring-2 focus:ring-teal-500 outline-none shadow-2xs"
+                className="w-full px-3.5 py-2 text-lg font-black font-mono tabular-nums bg-gradient-to-r from-teal-50 to-emerald-50 border-2 border-teal-500/80 text-teal-950 rounded-xl focus:ring-4 focus:ring-teal-500/15 focus:border-teal-600 outline-none transition-all"
               />
               <span className="absolute right-3 top-2.5 text-xs font-extrabold text-teal-700">
                 kg
@@ -224,19 +258,19 @@ export function PatientIntakeBar({
 
           <div className="lg:col-span-2 grid grid-cols-2 gap-1.5">
             <div>
-              <label className="block text-[10px] font-bold text-slate-600 mb-1">
-                Date (DD/MM)
+              <label className="block text-[10px] font-bold text-slate-500 mb-1">
+                Date
               </label>
               <input
                 type="date"
                 value={patient.baseDate}
                 onChange={(e) => onChange({ ...patient, baseDate: e.target.value })}
-                className="w-full px-2 py-2 text-xs font-bold bg-slate-50 border border-slate-300 rounded-xl outline-none"
+                className="w-full px-2 py-2.5 text-xs font-bold bg-slate-50/70 border border-slate-200 rounded-xl focus:bg-white focus:border-teal-500 outline-none"
               />
             </div>
             <div>
-              <label className="block text-[10px] font-bold text-slate-600 mb-1">
-                1st Dose Time
+              <label className="block text-[10px] font-bold text-slate-500 mb-1">
+                1st Dose
               </label>
               <input
                 type="time"
@@ -244,59 +278,62 @@ export function PatientIntakeBar({
                 onChange={(e) =>
                   onChange({ ...patient, defaultStartTime: e.target.value })
                 }
-                className="w-full px-2 py-2 text-xs font-bold bg-slate-50 border border-slate-300 rounded-xl outline-none"
+                className="w-full px-2 py-2.5 text-xs font-bold bg-slate-50/70 border border-slate-200 rounded-xl focus:bg-white focus:border-teal-500 outline-none"
               />
             </div>
           </div>
         </div>
 
-        {/* Clinical Guardrail Row: Age (NICU check) + Renal Impairment */}
-        <div className="mt-3 pt-2.5 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3">
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="flex items-center gap-1.5 text-xs">
-              <span className="font-bold text-slate-600">Age:</span>
-              <input
-                type="number"
-                min="0"
-                step="1"
-                placeholder="—"
-                value={patient.ageValue ?? ''}
-                onChange={(e) =>
-                  onChange({ ...patient, ageValue: e.target.value })
-                }
-                className="w-16 px-2 py-1 text-xs font-mono font-bold bg-slate-50 border border-slate-300 rounded-lg outline-none focus:border-teal-500"
-              />
-              <select
-                value={patient.ageUnit || 'years'}
-                onChange={(e) =>
-                  onChange({ ...patient, ageUnit: e.target.value as AgeUnit })
-                }
-                className="px-2 py-1 text-xs font-bold bg-slate-50 border border-slate-300 rounded-lg outline-none"
-              >
-                <option value="days">Days (NICU)</option>
-                <option value="months">Months</option>
-                <option value="years">Years</option>
-              </select>
-              {neonate && (
-                <span className="inline-flex items-center gap-1 text-[11px] font-extrabold bg-rose-100 text-rose-800 border border-rose-300 px-2 py-0.5 rounded-full">
-                  <AlertTriangle className="w-3 h-3" />
-                  NICU Neonate (≤28d)
-                </span>
-              )}
-            </div>
-
-            <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 cursor-pointer bg-slate-50 border border-slate-200 px-2.5 py-1 rounded-lg hover:bg-amber-50/60">
-              <input
-                type="checkbox"
-                checked={Boolean(patient.renalImpairment)}
-                onChange={(e) =>
-                  onChange({ ...patient, renalImpairment: e.target.checked })
-                }
-                className="rounded border-slate-300 text-amber-600 focus:ring-amber-500"
-              />
-              <span>Renal Impairment (قصور كلوي)</span>
-            </label>
+        {/* Clinical Guardrail Strip */}
+        <div className="pt-3 border-t border-slate-100 flex flex-wrap items-center gap-3 text-xs">
+          <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200/80 px-2.5 py-1 rounded-xl">
+            <span className="font-bold text-slate-500">Age:</span>
+            <input
+              type="number"
+              min="0"
+              step="1"
+              placeholder="—"
+              value={patient.ageValue ?? ''}
+              onChange={(e) => onChange({ ...patient, ageValue: e.target.value })}
+              className="w-12 bg-transparent font-mono font-bold text-slate-800 outline-none text-center"
+            />
+            <select
+              value={patient.ageUnit || 'years'}
+              onChange={(e) =>
+                onChange({ ...patient, ageUnit: e.target.value as AgeUnit })
+              }
+              className="bg-transparent font-bold text-slate-700 outline-none cursor-pointer"
+            >
+              <option value="days">Days</option>
+              <option value="months">Months</option>
+              <option value="years">Years</option>
+            </select>
           </div>
+
+          {neonate && (
+            <span className="inline-flex items-center gap-1 text-[11px] font-extrabold bg-rose-50 text-rose-700 border border-rose-200 px-2.5 py-1 rounded-full">
+              <AlertTriangle className="w-3 h-3" />
+              NICU Neonate (≤28d)
+            </span>
+          )}
+
+          <label
+            className={`flex items-center gap-2 font-bold px-3 py-1 rounded-xl border cursor-pointer transition-colors ${
+              patient.renalImpairment
+                ? 'bg-amber-50 border-amber-300 text-amber-900'
+                : 'bg-slate-50 border-slate-200/80 text-slate-600 hover:bg-slate-100'
+            }`}
+          >
+            <input
+              type="checkbox"
+              checked={Boolean(patient.renalImpairment)}
+              onChange={(e) =>
+                onChange({ ...patient, renalImpairment: e.target.checked })
+              }
+              className="rounded border-slate-300 text-amber-600 focus:ring-amber-500"
+            />
+            <span>Renal Impairment (قصور كلوي)</span>
+          </label>
         </div>
       </div>
     </section>

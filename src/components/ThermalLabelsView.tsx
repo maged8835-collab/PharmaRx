@@ -23,7 +23,7 @@ export function ThermalLabelsView({
 
   return (
     <div className="space-y-5">
-      <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs flex flex-wrap items-center justify-between gap-4">
+      <div className="bg-white p-5 sm:p-6 rounded-3xl border border-slate-200/80 shadow-[0_2px_16px_rgba(15,23,42,0.03)] flex flex-wrap items-center justify-between gap-4">
         <div>
           <h2 className="text-lg font-extrabold text-slate-900 flex items-center gap-2">
             <Printer className="w-5 h-5 text-teal-700" />
@@ -41,11 +41,10 @@ export function ThermalLabelsView({
               <button
                 key={sz}
                 onClick={() => onStickerSizeChange(sz)}
-                className={`px-2.5 py-1 rounded-lg font-mono font-bold transition-colors ${
-                  stickerSize === sz
-                    ? 'bg-white text-slate-900 shadow-2xs'
-                    : 'text-slate-600'
-                }`}
+                className={`px-2.5 py-1 rounded-lg font-mono font-bold transition-colors ${stickerSize === sz
+                  ? 'bg-white text-slate-900 shadow-2xs'
+                  : 'text-slate-600'
+                  }`}
               >
                 {sz}mm
               </button>

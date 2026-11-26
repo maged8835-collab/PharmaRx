@@ -581,7 +581,7 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-100 text-slate-900 font-sans">
+    <div className="min-h-screen bg-[#F6F9FC] text-slate-900 font-sans pb-12">
       <HeaderNav
         formularyCount={formulary.length}
         autoFilledCount={autoFilledDrugs.length}
@@ -624,91 +624,91 @@ export default function App() {
           }
         >
           <div key={activeTab} className="animate-fade-in-up">
-          {activeTab === 'autofill' && (
-          <AutoFillTable
-            formulary={formulary}
-            autoFilledDrugs={autoFilledDrugs}
-            categories={categories}
-            selectedCategory={selectedCategory}
-            searchQuery={searchQuery}
-            showSelectedOnly={showSelectedOnly}
-            regimenCount={patientRegimen.length}
-            regimenDrugIds={regimenDrugIds}
-            weightKg={patient.weightKg}
-            addedFeedbackId={addedFeedbackId}
-            onSearchChange={setSearchQuery}
-            onCategoryChange={setSelectedCategory}
-            onToggleSelectedOnly={() => setShowSelectedOnly((prev) => !prev)}
-            onOpenQuickAdd={() => setIsQuickAddModalOpen(true)}
-            onOpenRegimenTab={() => setActiveTab('regimen')}
-            onSelectPreset={(drug, newPresetId) => {
-              setSelectedPresetsByDrug((prev) => ({ ...prev, [drug.id]: newPresetId }));
-              setInlineDoseOverrideByDrug((prev) => {
-                const copy = { ...prev };
-                delete copy[drug.id];
-                return copy;
-              });
-              const found = drug.presets.find((p) => p.id === newPresetId);
-              if (found) {
-                setSelectedFreqOverrideByDrug((prev) => ({
-                  ...prev,
-                  [drug.id]: found.frequency,
-                }));
-              }
-            }}
-            onInlineDoseChange={(drugId, val) =>
-              setInlineDoseOverrideByDrug((prev) => ({ ...prev, [drugId]: val }))
-            }
-            onInlineConcChange={(drugId, val) =>
-              setInlineConcOverrideByDrug((prev) => ({ ...prev, [drugId]: val }))
-            }
-            onFreqChange={(drugId, freq) =>
-              setSelectedFreqOverrideByDrug((prev) => ({ ...prev, [drugId]: freq }))
-            }
-            onAddDrug={handleAddDrugToPatientSheet}
-          />
-        )}
+            {activeTab === 'autofill' && (
+              <AutoFillTable
+                formulary={formulary}
+                autoFilledDrugs={autoFilledDrugs}
+                categories={categories}
+                selectedCategory={selectedCategory}
+                searchQuery={searchQuery}
+                showSelectedOnly={showSelectedOnly}
+                regimenCount={patientRegimen.length}
+                regimenDrugIds={regimenDrugIds}
+                weightKg={patient.weightKg}
+                addedFeedbackId={addedFeedbackId}
+                onSearchChange={setSearchQuery}
+                onCategoryChange={setSelectedCategory}
+                onToggleSelectedOnly={() => setShowSelectedOnly((prev) => !prev)}
+                onOpenQuickAdd={() => setIsQuickAddModalOpen(true)}
+                onOpenRegimenTab={() => setActiveTab('regimen')}
+                onSelectPreset={(drug, newPresetId) => {
+                  setSelectedPresetsByDrug((prev) => ({ ...prev, [drug.id]: newPresetId }));
+                  setInlineDoseOverrideByDrug((prev) => {
+                    const copy = { ...prev };
+                    delete copy[drug.id];
+                    return copy;
+                  });
+                  const found = drug.presets.find((p) => p.id === newPresetId);
+                  if (found) {
+                    setSelectedFreqOverrideByDrug((prev) => ({
+                      ...prev,
+                      [drug.id]: found.frequency,
+                    }));
+                  }
+                }}
+                onInlineDoseChange={(drugId, val) =>
+                  setInlineDoseOverrideByDrug((prev) => ({ ...prev, [drugId]: val }))
+                }
+                onInlineConcChange={(drugId, val) =>
+                  setInlineConcOverrideByDrug((prev) => ({ ...prev, [drugId]: val }))
+                }
+                onFreqChange={(drugId, freq) =>
+                  setSelectedFreqOverrideByDrug((prev) => ({ ...prev, [drugId]: freq }))
+                }
+                onAddDrug={handleAddDrugToPatientSheet}
+              />
+            )}
 
-        {activeTab === 'regimen' && (
-          <PatientRegimenSheet
-            patient={patient}
-            computedRegimen={computedPatientRegimen}
-            stickersCount={allThermalStickers.length}
-            onGoToAutoFill={() => setActiveTab('autofill')}
-            onExportCsv={handleExportPatientExcel}
-            onGoToLabels={() => setActiveTab('labels')}
-            onUpdateItem={handleUpdateRegimenItem}
-            onRemoveItem={handleRemoveRegimenItem}
-          />
-        )}
+            {activeTab === 'regimen' && (
+              <PatientRegimenSheet
+                patient={patient}
+                computedRegimen={computedPatientRegimen}
+                stickersCount={allThermalStickers.length}
+                onGoToAutoFill={() => setActiveTab('autofill')}
+                onExportCsv={handleExportPatientExcel}
+                onGoToLabels={() => setActiveTab('labels')}
+                onUpdateItem={handleUpdateRegimenItem}
+                onRemoveItem={handleRemoveRegimenItem}
+              />
+            )}
 
-        {activeTab === 'labels' && (
-          <ThermalLabelsView
-            stickers={allThermalStickers}
-            stickerSize={stickerSize}
-            onStickerSizeChange={setStickerSize}
-            onGoToAutoFill={() => setActiveTab('autofill')}
-          />
-        )}
+            {activeTab === 'labels' && (
+              <ThermalLabelsView
+                stickers={allThermalStickers}
+                stickerSize={stickerSize}
+                onStickerSizeChange={setStickerSize}
+                onGoToAutoFill={() => setActiveTab('autofill')}
+              />
+            )}
 
-        {activeTab === 'config' && (
-          <PrepStandardsView
-            formulary={formulary}
-            newDrugForm={newDrugForm}
-            onNewDrugFormChange={setNewDrugForm}
-            onAddNewDrug={handleAddNewFormularyDrug}
-            onSaveDrugEdit={handleSaveMasterDrugEdit}
-            onExportJson={handleExportMasterJson}
-            onImportFile={handleImportMasterFile}
-            onResetDefault={() => {
-              setFormulary(INITIAL_PHARMACY_FORMULARY);
-              showToast(
-                `تم استعادة الموسوعة الافتراضية (${INITIAL_PHARMACY_FORMULARY.length} دواء).`
-              );
-            }}
-          />
-        )}
-        </div>
+            {activeTab === 'config' && (
+              <PrepStandardsView
+                formulary={formulary}
+                newDrugForm={newDrugForm}
+                onNewDrugFormChange={setNewDrugForm}
+                onAddNewDrug={handleAddNewFormularyDrug}
+                onSaveDrugEdit={handleSaveMasterDrugEdit}
+                onExportJson={handleExportMasterJson}
+                onImportFile={handleImportMasterFile}
+                onResetDefault={() => {
+                  setFormulary(INITIAL_PHARMACY_FORMULARY);
+                  showToast(
+                    `تم استعادة الموسوعة الافتراضية (${INITIAL_PHARMACY_FORMULARY.length} دواء).`
+                  );
+                }}
+              />
+            )}
+          </div>
         </Suspense>
       </main>
 
