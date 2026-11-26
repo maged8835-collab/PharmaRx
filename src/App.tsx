@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from '
 import { CheckCircle2 } from 'lucide-react';
 import { AutoFillTable } from './components/AutoFillTable';
 import { HeaderNav } from './components/HeaderNav';
+import { LoginPage } from './components/LoginPage';
 import { PatientIntakeBar, type DemoCaseType } from './components/PatientIntakeBar';
 import { PatientRegimenSheet } from './components/PatientRegimenSheet';
 import { PrepStandardsView } from './components/PrepStandardsView';
@@ -16,9 +17,11 @@ import type {
   LabelNameMode,
   NewDrugFormState,
   PatientInfo,
+  PharmacistSession,
   RegimenItem,
   StickerSize,
 } from './types/pharmacy';
+import { clearSession, loadSession, saveSession } from './utils/auth';
 import {
   buildPatientRegimenCsv,
   buildThermalStickers,
@@ -57,6 +60,7 @@ const INITIAL_NEW_DRUG_FORM: NewDrugFormState = {
 };
 
 export default function App() {
+  const [session, setSession] = useState<PharmacistSession | null>(() => loadSession());
   const [formulary, setFormulary] = useState<FormularyDrug[]>(() =>
     loadFormulary(INITIAL_PHARMACY_FORMULARY)
   );
@@ -448,6 +452,20 @@ export default function App() {
     e.target.value = '';
   };
 
+  const handleLoginSuccess = (newSession: PharmacistSession, remember: boolean) => {
+    saveSession(newSession, remember);
+    setSession(newSession);
+  };
+
+  const handleLogout = () => {
+    clearSession();
+    setSession(null);
+  };
+
+  if (!session) {
+    return <LoginPage onLoginSuccess={handleLoginSuccess} />;
+  }
+
   return (
     <div className="min-h-screen bg-slate-100 text-slate-900 font-sans">
       <HeaderNav
@@ -456,7 +474,9 @@ export default function App() {
         regimenCount={computedPatientRegimen.length}
         stickersCount={allThermalStickers.length}
         activeTab={activeTab}
+        session={session}
         onTabChange={setActiveTab}
+        onLogout={handleLogout}
       />
 
       {configToast && (

@@ -1,5 +1,5 @@
-import { Database, FileSpreadsheet, Printer, Sparkles, Syringe } from 'lucide-react';
-import type { ActiveTab } from '../types/pharmacy';
+import { Database, FileSpreadsheet, LogOut, Printer, Sparkles, Syringe, UserCheck } from 'lucide-react';
+import type { ActiveTab, PharmacistSession } from '../types/pharmacy';
 
 interface HeaderNavProps {
   formularyCount: number;
@@ -7,7 +7,9 @@ interface HeaderNavProps {
   regimenCount: number;
   stickersCount: number;
   activeTab: ActiveTab;
+  session: PharmacistSession;
   onTabChange: (tab: ActiveTab) => void;
+  onLogout: () => void;
 }
 
 export function HeaderNav({
@@ -16,7 +18,9 @@ export function HeaderNav({
   regimenCount,
   stickersCount,
   activeTab,
+  session,
   onTabChange,
+  onLogout,
 }: HeaderNavProps) {
   const tabs: Array<{
     id: ActiveTab;
@@ -77,6 +81,24 @@ export function HeaderNav({
             );
           })}
         </nav>
+
+        <div className="flex items-center gap-2 bg-slate-800/80 border border-slate-700 px-3 py-1.5 rounded-xl">
+          <UserCheck className="w-4 h-4 text-teal-400 shrink-0" />
+          <div className="text-right leading-tight">
+            <div className="text-xs font-bold text-white" dir="rtl">
+              {session.displayName}
+            </div>
+            <div className="text-[10px] text-slate-400">{session.role}</div>
+          </div>
+          <button
+            onClick={onLogout}
+            className="ml-1.5 px-2.5 py-1 rounded-lg bg-rose-500/15 hover:bg-rose-500/30 text-rose-300 border border-rose-400/30 text-xs font-bold flex items-center gap-1 transition-colors"
+            title="Sign Out"
+          >
+            <LogOut className="w-3.5 h-3.5" />
+            <span>خروج</span>
+          </button>
+        </div>
       </div>
     </header>
   );

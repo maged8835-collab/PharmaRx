@@ -8,6 +8,15 @@ export type LabelNameMode = 'trade' | 'generic';
 
 export type ActiveTab = 'autofill' | 'regimen' | 'labels' | 'config';
 
+export type PharmacistRole = 'Clinical Pharmacist' | 'Senior Pharmacist' | 'Admin';
+
+export interface PharmacistSession {
+  username: string;
+  displayName: string;
+  role: PharmacistRole;
+  loggedInAt: string;
+}
+
 export interface DrugPreset {
   id: string;
   label: string;
