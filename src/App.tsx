@@ -29,6 +29,7 @@ import {
   fetchMedicationsFromSupabase,
   fetchSavedPatients,
   getActiveSupabaseSession,
+  logActivity,
   savePatientToCloud,
   signOutSupabase,
   upsertMedicationToSupabase,
@@ -66,6 +67,11 @@ const QuickAddModal = lazy(() =>
 const InfusionPumpModal = lazy(() =>
   import('./components/InfusionPumpModal').then((m) => ({
     default: m.InfusionPumpModal,
+  }))
+);
+const AdminDashboard = lazy(() =>
+  import('./components/AdminDashboard').then((m) => ({
+    default: m.AdminDashboard,
   }))
 );
 
@@ -287,6 +293,11 @@ export default function App() {
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
+    logActivity(
+      session,
+      'EXPORT_CSV',
+      `تصدير شيت المريض ${patient.fullName || 'Unnamed'} (${computedPatientRegimen.length} أدوية)`
+    );
   };
 
   const handleSaveMasterDrugEdit = async (
@@ -304,6 +315,11 @@ export default function App() {
     setFormulary((prev) => prev.map((d) => (d.id === drugId ? updatedDrug : d)));
     const { ok, error } = await upsertMedicationToSupabase(updatedDrug);
     if (ok) {
+      logActivity(
+        session,
+        'UPDATE_MEDICATION',
+        `تعديل التركيز القياسي لـ ${updatedDrug.genericName} إلى ${updatedDrug.finalConcMgMl} ${updatedDrug.doseUnit}/mL`
+      );
       showToast('تم حفظ تعديل التركيز القياسي على Supabase وتحديث جميع الحسابات.');
     } else {
       showToast(`تعذر الحفظ على Supabase: ${error}`);
@@ -350,6 +366,11 @@ export default function App() {
     setIsQuickAddModalOpen(false);
     const { ok, error } = await upsertMedicationToSupabase(newItem);
     if (ok) {
+      logActivity(
+        session,
+        'ADD_MEDICATION',
+        `إضافة دواء جديد: ${newItem.genericName} (${newItem.finalConcMgMl} ${newItem.doseUnit}/mL)`
+      );
       showToast(`تم حفظ "${newItem.genericName}" في قاعدة بيانات Supabase.`);
     } else {
       showToast(`تعذر الحفظ على Supabase: ${error}`);
@@ -396,6 +417,7 @@ export default function App() {
         const { ok, error } = await bulkUpsertMedicationsToSupabase(toImport);
         if (ok) {
           if (session?.userId) await loadCloudData(session.userId);
+          logActivity(session, 'BULK_IMPORT', `استيراد ${toImport.length} دواء إلى Supabase`);
           showToast(`تم استيراد ورفع ${toImport.length} دواء إلى Supabase بنجاح!`);
         } else {
           showToast(`تعذر الرفع إلى Supabase: ${error}`);
@@ -409,6 +431,7 @@ export default function App() {
   };
 
   const handleLogout = async () => {
+    await logActivity(session, 'LOGOUT', 'تسجيل خروج من المنصة');
     await signOutSupabase();
     setSession(null);
   };
@@ -427,6 +450,11 @@ export default function App() {
       return;
     }
     setSavedPatients((prev) => [record, ...prev]);
+    logActivity(
+      session,
+      'SAVE_PATIENT',
+      `حفظ ملف المريض: ${record.patient_name} (${record.weight_kg} kg)`
+    );
     showToast(`تم حفظ ملف المريض "${record.patient_name}" سحابياً على Supabase!`);
   };
 
@@ -623,6 +651,18 @@ export default function App() {
                     onSaveDrugEdit={handleSaveMasterDrugEdit}
                     onExportJson={handleExportMasterJson}
                     onImportFile={handleImportMasterFile}
+                  />
+                )}
+
+                {activeTab === 'admin' && session.role === 'Admin' && (
+                  <AdminDashboard
+                    session={session}
+                    formularyCount={formulary.length}
+                    onLoadPatient={(rec) => {
+                      handleLoadSavedPatient(rec);
+                      setActiveTab('regimen');
+                    }}
+                    onToast={showToast}
                   />
                 )}
               </>

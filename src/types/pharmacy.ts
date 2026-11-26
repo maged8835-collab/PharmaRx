@@ -6,7 +6,7 @@ export type StickerSize = '50x30' | '60x40' | '70x40';
 
 export type LabelNameMode = 'trade' | 'generic';
 
-export type ActiveTab = 'autofill' | 'regimen' | 'labels' | 'config';
+export type ActiveTab = 'autofill' | 'regimen' | 'labels' | 'config' | 'admin';
 
 export type PharmacistRole = 'Clinical Pharmacist' | 'Senior Pharmacist' | 'Admin';
 
@@ -17,6 +17,25 @@ export interface PharmacistSession {
   loggedInAt: string;
   userId?: string;
   authSource?: 'local' | 'supabase';
+}
+
+export interface UserProfileRecord {
+  id: string;
+  email: string;
+  display_name: string;
+  role: 'admin' | 'pharmacist';
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface ActivityLogRecord {
+  id: string;
+  user_id: string | null;
+  user_email: string;
+  user_name: string;
+  action: string;
+  details: string;
+  created_at: string;
 }
 
 export interface SavedPatientRecord {

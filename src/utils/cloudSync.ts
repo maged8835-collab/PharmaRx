@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase';
 import type {
+  ActivityLogRecord,
   DoseUnit,
   DrugPreset,
   FormularyDrug,
@@ -7,6 +8,7 @@ import type {
   PharmacistSession,
   RegimenItem,
   SavedPatientRecord,
+  UserProfileRecord,
 } from '../types/pharmacy';
 import { normalizeFormularyDrug } from './storage';
 
@@ -68,6 +70,46 @@ function formularyDrugToRow(d: FormularyDrug): MedicationRow {
   };
 }
 
+async function resolveProfileForUser(
+  userId: string,
+  email: string,
+  fallbackName: string
+): Promise<{
+  displayName: string;
+  role: 'Admin' | 'Clinical Pharmacist';
+  isActive: boolean;
+}> {
+  if (!supabase) {
+    return { displayName: fallbackName, role: 'Clinical Pharmacist', isActive: true };
+  }
+  const { data } = await supabase
+    .from('profiles')
+    .select('display_name, role, is_active')
+    .eq('id', userId)
+    .maybeSingle();
+
+  if (!data) {
+    // Ensure profile exists if trigger hadn't run
+    await supabase.from('profiles').upsert(
+      {
+        id: userId,
+        email,
+        display_name: fallbackName,
+        role: 'pharmacist',
+        is_active: true,
+      },
+      { onConflict: 'id' }
+    );
+    return { displayName: fallbackName, role: 'Clinical Pharmacist', isActive: true };
+  }
+
+  return {
+    displayName: data.display_name || fallbackName,
+    role: data.role === 'admin' ? 'Admin' : 'Clinical Pharmacist',
+    isActive: data.is_active !== false,
+  };
+}
+
 export async function signInWithSupabaseEmail(
   email: string,
   password: string
@@ -87,22 +129,36 @@ export async function signInWithSupabaseEmail(
     };
   }
 
-  const displayName =
+  const fallbackName =
     (data.user.user_metadata?.display_name as string | undefined) ||
     data.user.email?.split('@')[0] ||
     'Pharmacist';
 
-  return {
-    session: {
-      username: data.user.email || email.trim(),
-      displayName,
-      role: 'Clinical Pharmacist',
-      loggedInAt: new Date().toISOString(),
-      userId: data.user.id,
-      authSource: 'supabase',
-    },
-    error: null,
+  const profile = await resolveProfileForUser(
+    data.user.id,
+    data.user.email || email.trim(),
+    fallbackName
+  );
+
+  if (!profile.isActive) {
+    await supabase.auth.signOut();
+    return {
+      session: null,
+      error: 'تم إيقاف هذا الحساب من قِبل مدير المنصة (Admin).',
+    };
+  }
+
+  const session: PharmacistSession = {
+    username: data.user.email || email.trim(),
+    displayName: profile.displayName,
+    role: profile.role,
+    loggedInAt: new Date().toISOString(),
+    userId: data.user.id,
+    authSource: 'supabase',
   };
+
+  await logActivity(session, 'LOGIN', 'تسجيل دخول إلى المنصة');
+  return { session, error: null };
 }
 
 export async function signUpWithSupabaseEmail(
@@ -140,18 +196,23 @@ export async function signUpWithSupabaseEmail(
     return { session: null, needsEmailConfirm: true, error: null };
   }
 
-  return {
-    session: {
-      username: data.user.email || email.trim(),
-      displayName: displayName.trim() || data.user.email?.split('@')[0] || 'Pharmacist',
-      role: 'Clinical Pharmacist',
-      loggedInAt: new Date().toISOString(),
-      userId: data.user.id,
-      authSource: 'supabase',
-    },
-    needsEmailConfirm: false,
-    error: null,
+  const profile = await resolveProfileForUser(
+    data.user.id,
+    data.user.email || email.trim(),
+    displayName.trim() || data.user.email?.split('@')[0] || 'Pharmacist'
+  );
+
+  const session: PharmacistSession = {
+    username: data.user.email || email.trim(),
+    displayName: profile.displayName,
+    role: profile.role,
+    loggedInAt: new Date().toISOString(),
+    userId: data.user.id,
+    authSource: 'supabase',
   };
+
+  await logActivity(session, 'SIGNUP', 'إنشاء حساب صيدلي جديد');
+  return { session, needsEmailConfirm: false, error: null };
 }
 
 export async function getActiveSupabaseSession(): Promise<PharmacistSession | null> {
@@ -160,15 +221,26 @@ export async function getActiveSupabaseSession(): Promise<PharmacistSession | nu
   const user = data.session?.user;
   if (!user) return null;
 
-  const displayName =
+  const fallbackName =
     (user.user_metadata?.display_name as string | undefined) ||
     user.email?.split('@')[0] ||
     'Pharmacist';
 
+  const profile = await resolveProfileForUser(
+    user.id,
+    user.email || '',
+    fallbackName
+  );
+
+  if (!profile.isActive) {
+    await supabase.auth.signOut();
+    return null;
+  }
+
   return {
     username: user.email || user.id,
-    displayName,
-    role: 'Clinical Pharmacist',
+    displayName: profile.displayName,
+    role: profile.role,
     loggedInAt: new Date().toISOString(),
     userId: user.id,
     authSource: 'supabase',
@@ -178,6 +250,25 @@ export async function getActiveSupabaseSession(): Promise<PharmacistSession | nu
 export async function signOutSupabase(): Promise<void> {
   if (!supabase) return;
   await supabase.auth.signOut();
+}
+
+export async function logActivity(
+  session: PharmacistSession | null,
+  action: string,
+  details: string
+): Promise<void> {
+  if (!supabase || !session?.userId) return;
+  try {
+    await supabase.from('activity_logs').insert({
+      user_id: session.userId,
+      user_email: session.username,
+      user_name: session.displayName,
+      action,
+      details,
+    });
+  } catch {
+    // Non-blocking audit log
+  }
 }
 
 export async function fetchMedicationsFromSupabase(): Promise<{
@@ -279,4 +370,52 @@ export async function deleteSavedPatient(id: string): Promise<boolean> {
   if (!supabase) return false;
   const { error } = await supabase.from('patient_regimens').delete().eq('id', id);
   return !error;
+}
+
+// ============================================================================
+// ADMIN MANAGEMENT & AUDIT LOG APIs
+// ============================================================================
+
+export async function fetchAllProfiles(): Promise<UserProfileRecord[]> {
+  if (!supabase) return [];
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('*')
+    .order('created_at', { ascending: false });
+  if (error || !Array.isArray(data)) return [];
+  return data as UserProfileRecord[];
+}
+
+export async function updateUserProfile(
+  userId: string,
+  updates: { role?: 'admin' | 'pharmacist'; is_active?: boolean }
+): Promise<{ ok: boolean; error: string | null }> {
+  if (!supabase) return { ok: false, error: 'Supabase غير متصل.' };
+  const { error } = await supabase
+    .from('profiles')
+    .update(updates)
+    .eq('id', userId);
+  return { ok: !error, error: error?.message || null };
+}
+
+export async function fetchActivityLogs(limit = 150): Promise<ActivityLogRecord[]> {
+  if (!supabase) return [];
+  const { data, error } = await supabase
+    .from('activity_logs')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(limit);
+  if (error || !Array.isArray(data)) return [];
+  return data as ActivityLogRecord[];
+}
+
+export async function fetchAllPatientsAdmin(limit = 100): Promise<SavedPatientRecord[]> {
+  if (!supabase) return [];
+  const { data, error } = await supabase
+    .from('patient_regimens')
+    .select('*')
+    .order('updated_at', { ascending: false })
+    .limit(limit);
+  if (error || !Array.isArray(data)) return [];
+  return data as SavedPatientRecord[];
 }

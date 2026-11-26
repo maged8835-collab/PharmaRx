@@ -4,6 +4,7 @@ import {
   FileSpreadsheet,
   LogOut,
   Printer,
+  Shield,
   Sparkles,
   Syringe,
 } from 'lucide-react';
@@ -40,6 +41,9 @@ export function HeaderNav({
     { id: 'regimen', label: 'Patient Sheet', icon: FileSpreadsheet, count: regimenCount },
     { id: 'labels', label: 'Labels', icon: Printer, count: stickersCount },
     { id: 'config', label: 'Standards', icon: Database },
+    ...(session.role === 'Admin'
+      ? [{ id: 'admin' as ActiveTab, label: 'Admin', icon: Shield }]
+      : []),
   ];
 
   const initials = session.displayName
