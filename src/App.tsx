@@ -1,15 +1,36 @@
-import { useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent } from 'react';
 import { CheckCircle2 } from 'lucide-react';
-import { AutoFillTable } from './components/AutoFillTable';
 import { HeaderNav } from './components/HeaderNav';
-import { InfusionPumpModal } from './components/InfusionPumpModal';
 import { LoginPage } from './components/LoginPage';
 import { PatientIntakeBar, type DemoCaseType } from './components/PatientIntakeBar';
-import { PatientRegimenSheet } from './components/PatientRegimenSheet';
-import { PrepStandardsView } from './components/PrepStandardsView';
-import { QuickAddModal } from './components/QuickAddModal';
-import { ThermalLabelsView } from './components/ThermalLabelsView';
 import { INITIAL_PHARMACY_FORMULARY } from './data/formulary';
+
+const AutoFillTable = lazy(() =>
+  import('./components/AutoFillTable').then((m) => ({ default: m.AutoFillTable }))
+);
+const PatientRegimenSheet = lazy(() =>
+  import('./components/PatientRegimenSheet').then((m) => ({
+    default: m.PatientRegimenSheet,
+  }))
+);
+const ThermalLabelsView = lazy(() =>
+  import('./components/ThermalLabelsView').then((m) => ({
+    default: m.ThermalLabelsView,
+  }))
+);
+const PrepStandardsView = lazy(() =>
+  import('./components/PrepStandardsView').then((m) => ({
+    default: m.PrepStandardsView,
+  }))
+);
+const QuickAddModal = lazy(() =>
+  import('./components/QuickAddModal').then((m) => ({ default: m.QuickAddModal }))
+);
+const InfusionPumpModal = lazy(() =>
+  import('./components/InfusionPumpModal').then((m) => ({
+    default: m.InfusionPumpModal,
+  }))
+);
 import type {
   ActiveTab,
   AutoFilledDrug,
@@ -595,7 +616,14 @@ export default function App() {
       />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
-        <div key={activeTab} className="animate-fade-in-up">
+        <Suspense
+          fallback={
+            <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center text-sm font-bold text-slate-500 animate-pulse">
+              جاري تحميل الواجهة...
+            </div>
+          }
+        >
+          <div key={activeTab} className="animate-fade-in-up">
           {activeTab === 'autofill' && (
           <AutoFillTable
             formulary={formulary}
@@ -683,22 +711,25 @@ export default function App() {
           />
         )}
         </div>
+        </Suspense>
       </main>
 
-      <QuickAddModal
-        isOpen={isQuickAddModalOpen}
-        weightKg={patient.weightKg}
-        newDrugForm={newDrugForm}
-        onChange={setNewDrugForm}
-        onClose={() => setIsQuickAddModalOpen(false)}
-        onSubmit={handleAddNewFormularyDrug}
-      />
+      <Suspense fallback={null}>
+        <QuickAddModal
+          isOpen={isQuickAddModalOpen}
+          weightKg={patient.weightKg}
+          newDrugForm={newDrugForm}
+          onChange={setNewDrugForm}
+          onClose={() => setIsQuickAddModalOpen(false)}
+          onSubmit={handleAddNewFormularyDrug}
+        />
 
-      <InfusionPumpModal
-        isOpen={isPumpModalOpen}
-        weightKg={patient.weightKg}
-        onClose={() => setIsPumpModalOpen(false)}
-      />
+        <InfusionPumpModal
+          isOpen={isPumpModalOpen}
+          weightKg={patient.weightKg}
+          onClose={() => setIsPumpModalOpen(false)}
+        />
+      </Suspense>
     </div>
   );
 }
