@@ -1,6 +1,18 @@
--- PediaSurgRx Complete Supabase Schema (Run in Supabase SQL Editor)
+-- PediaSurgRx Complete Supabase Schema (Idempotent - Safe to re-run in Supabase SQL Editor)
 
--- 0. Helper function to check if current user is an Admin
+-- 1. Pharmacist & Admin Profiles (must exist before is_admin() SQL function)
+create table if not exists public.profiles (
+  id uuid primary key references auth.users(id) on delete cascade,
+  email text not null,
+  display_name text not null default '',
+  role text not null default 'pharmacist' check (role in ('admin', 'pharmacist')),
+  is_active boolean not null default true,
+  created_at timestamptz not null default now()
+);
+
+alter table public.profiles enable row level security;
+
+-- Helper function to check if current user is an Admin
 create or replace function public.is_admin()
 returns boolean
 language sql
@@ -13,28 +25,19 @@ as $$
   );
 $$;
 
--- 1. Pharmacist & Admin Profiles
-create table if not exists public.profiles (
-  id uuid primary key references auth.users(id) on delete cascade,
-  email text not null,
-  display_name text not null default '',
-  role text not null default 'pharmacist' check (role in ('admin', 'pharmacist')),
-  is_active boolean not null default true,
-  created_at timestamptz not null default now()
-);
-
-alter table public.profiles enable row level security;
-
+drop policy if exists "Users can read own profile or admin reads all" on public.profiles;
 create policy "Users can read own profile or admin reads all"
   on public.profiles for select
   to authenticated
   using (auth.uid() = id or public.is_admin());
 
+drop policy if exists "Users can insert own profile" on public.profiles;
 create policy "Users can insert own profile"
   on public.profiles for insert
   to authenticated
   with check (auth.uid() = id);
 
+drop policy if exists "Admins can update any profile" on public.profiles;
 create policy "Admins can update any profile"
   on public.profiles for update
   to authenticated
@@ -97,16 +100,19 @@ create table if not exists public.medications (
 
 alter table public.medications enable row level security;
 
+drop policy if exists "Authenticated users can read medications" on public.medications;
 create policy "Authenticated users can read medications"
   on public.medications for select
   to authenticated
   using (true);
 
+drop policy if exists "Authenticated users can insert medications" on public.medications;
 create policy "Authenticated users can insert medications"
   on public.medications for insert
   to authenticated
   with check (true);
 
+drop policy if exists "Authenticated users can update medications" on public.medications;
 create policy "Authenticated users can update medications"
   on public.medications for update
   to authenticated
@@ -132,22 +138,27 @@ create table if not exists public.patient_regimens (
 
 alter table public.patient_regimens enable row level security;
 
+drop policy if exists "Users can read own patients" on public.patient_regimens;
+drop policy if exists "Users can read own patients or admin reads all" on public.patient_regimens;
 create policy "Users can read own patients or admin reads all"
   on public.patient_regimens for select
   to authenticated
   using (auth.uid() = user_id or public.is_admin());
 
+drop policy if exists "Users can insert own patients" on public.patient_regimens;
 create policy "Users can insert own patients"
   on public.patient_regimens for insert
   to authenticated
   with check (auth.uid() = user_id);
 
+drop policy if exists "Users can update own patients" on public.patient_regimens;
 create policy "Users can update own patients"
   on public.patient_regimens for update
   to authenticated
   using (auth.uid() = user_id or public.is_admin())
   with check (auth.uid() = user_id or public.is_admin());
 
+drop policy if exists "Users can delete own patients" on public.patient_regimens;
 create policy "Users can delete own patients"
   on public.patient_regimens for delete
   to authenticated
@@ -166,11 +177,13 @@ create table if not exists public.activity_logs (
 
 alter table public.activity_logs enable row level security;
 
+drop policy if exists "Authenticated users can insert own activity logs" on public.activity_logs;
 create policy "Authenticated users can insert own activity logs"
   on public.activity_logs for insert
   to authenticated
   with check (auth.uid() = user_id);
 
+drop policy if exists "Only admins can read all activity logs" on public.activity_logs;
 create policy "Only admins can read all activity logs"
   on public.activity_logs for select
   to authenticated
