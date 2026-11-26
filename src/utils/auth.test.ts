@@ -9,6 +9,13 @@ describe('local pharmacist authentication', () => {
     expect(session?.role).toBe('Clinical Pharmacist');
   });
 
+  it('authenticates amal.essam account', () => {
+    const session = authenticateUser('amal.essam', '172001');
+    expect(session).not.toBeNull();
+    expect(session?.username).toBe('amal.essam');
+    expect(session?.displayName).toBe('د. أمل عصام');
+  });
+
   it('handles case-insensitive and whitespace-padded usernames', () => {
     const session = authenticateUser('  Admin  ', 'admin123');
     expect(session).not.toBeNull();

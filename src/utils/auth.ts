@@ -26,6 +26,12 @@ export function hashSecret(input: string): string {
 
 export const DEFAULT_ACCOUNTS: StoredAccount[] = [
   {
+    username: 'amal.essam',
+    displayName: 'د. أمل عصام',
+    role: 'Clinical Pharmacist',
+    passwordHash: hashSecret('172001'),
+  },
+  {
     username: 'pharmacist',
     displayName: 'د. الصيدلي المناوب',
     role: 'Clinical Pharmacist',
