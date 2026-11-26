@@ -1,4 +1,4 @@
-import { Database, FileSpreadsheet, LogOut, Printer, Sparkles, Syringe, UserCheck } from 'lucide-react';
+import { Cloud, Database, FileSpreadsheet, LogOut, Printer, Sparkles, Syringe, UserCheck } from 'lucide-react';
 import type { ActiveTab, PharmacistSession } from '../types/pharmacy';
 
 interface HeaderNavProps {
@@ -85,8 +85,17 @@ export function HeaderNav({
         <div className="flex items-center gap-2 bg-slate-800/80 border border-slate-700 px-3 py-1.5 rounded-xl">
           <UserCheck className="w-4 h-4 text-teal-400 shrink-0" />
           <div className="text-right leading-tight">
-            <div className="text-xs font-bold text-white" dir="rtl">
-              {session.displayName}
+            <div className="text-xs font-bold text-white flex items-center gap-1.5" dir="rtl">
+              <span>{session.displayName}</span>
+              {session.authSource === 'supabase' && (
+                <span
+                  className="inline-flex items-center gap-0.5 text-[10px] bg-teal-500/20 text-teal-300 border border-teal-400/30 px-1.5 py-0.2 rounded-full"
+                  title="Connected to Supabase Cloud"
+                >
+                  <Cloud className="w-2.5 h-2.5" />
+                  Cloud
+                </span>
+              )}
             </div>
             <div className="text-[10px] text-slate-400">{session.role}</div>
           </div>

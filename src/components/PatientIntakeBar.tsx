@@ -1,23 +1,38 @@
-import { RotateCcw, User } from 'lucide-react';
-import type { PatientInfo } from '../types/pharmacy';
+import { useState } from 'react';
+import { CloudUpload, FolderOpen, RotateCcw, Trash2, User } from 'lucide-react';
+import type { PatientInfo, SavedPatientRecord } from '../types/pharmacy';
 
 export type DemoCaseType = 'lasix_3kg' | 'baraa' | 'mohamed' | 'fares_vanco';
 
 interface PatientIntakeBarProps {
   patient: PatientInfo;
   formularyCount: number;
+  isCloudUser: boolean;
+  savedPatients: SavedPatientRecord[];
+  isSavingCloud: boolean;
   onChange: (updated: PatientInfo) => void;
   onLoadDemoCase: (caseType: DemoCaseType) => void;
   onClearPatient: () => void;
+  onSaveToCloud: () => void;
+  onLoadSavedPatient: (record: SavedPatientRecord) => void;
+  onDeleteSavedPatient: (id: string) => void;
 }
 
 export function PatientIntakeBar({
   patient,
   formularyCount,
+  isCloudUser,
+  savedPatients,
+  isSavingCloud,
   onChange,
   onLoadDemoCase,
   onClearPatient,
+  onSaveToCloud,
+  onLoadSavedPatient,
+  onDeleteSavedPatient,
 }: PatientIntakeBarProps) {
+  const [showSavedList, setShowSavedList] = useState(false);
+
   return (
     <section className="bg-white border-b border-slate-200 shadow-2xs">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
@@ -56,6 +71,29 @@ export function PatientIntakeBar({
             >
               فارس (Vancomycin 36 kg = 144 mL)
             </button>
+
+            {isCloudUser && (
+              <>
+                <button
+                  onClick={onSaveToCloud}
+                  disabled={isSavingCloud}
+                  className="px-2.5 py-1 rounded-lg bg-teal-600 hover:bg-teal-700 disabled:opacity-60 text-white font-bold flex items-center gap-1 transition-all duration-150 hover:-translate-y-0.5 cursor-pointer"
+                  title="Save patient & regimen to Supabase"
+                >
+                  <CloudUpload className="w-3.5 h-3.5" />
+                  <span>{isSavingCloud ? 'Saving...' : 'حفظ سحابياً'}</span>
+                </button>
+
+                <button
+                  onClick={() => setShowSavedList((prev) => !prev)}
+                  className="px-2.5 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-800 border border-indigo-200 font-bold flex items-center gap-1 transition-all duration-150 cursor-pointer"
+                >
+                  <FolderOpen className="w-3.5 h-3.5" />
+                  <span>المرضى المحفوظون ({savedPatients.length})</span>
+                </button>
+              </>
+            )}
+
             <button
               onClick={onClearPatient}
               className="px-2.5 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-semibold flex items-center gap-1 transition-all duration-150 hover:-translate-y-0.5 cursor-pointer"
@@ -66,6 +104,45 @@ export function PatientIntakeBar({
             </button>
           </div>
         </div>
+
+        {isCloudUser && showSavedList && (
+          <div className="mb-3 p-3 rounded-xl bg-slate-50 border border-slate-200 animate-fade-in-up">
+            <div className="text-xs font-bold text-slate-700 mb-2" dir="rtl">
+              سجل المرضى المحفوظ على Supabase:
+            </div>
+            {savedPatients.length === 0 ? (
+              <p className="text-xs text-slate-500" dir="rtl">
+                لا يوجد مرضى محفوظين بعد. اضغط &quot;حفظ سحابياً&quot; لحفظ الحالة الحالية.
+              </p>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {savedPatients.map((rec) => (
+                  <div
+                    key={rec.id}
+                    className="flex items-center gap-2 bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs shadow-2xs"
+                  >
+                    <button
+                      onClick={() => {
+                        onLoadSavedPatient(rec);
+                        setShowSavedList(false);
+                      }}
+                      className="font-bold text-teal-800 hover:underline text-right cursor-pointer"
+                    >
+                      {rec.patient_name} ({rec.weight_kg} kg • {rec.regimen?.length || 0} drugs)
+                    </button>
+                    <button
+                      onClick={() => onDeleteSavedPatient(rec.id)}
+                      className="text-rose-500 hover:text-rose-700 p-0.5 cursor-pointer"
+                      title="Delete saved patient"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3 items-end">
           <div className="lg:col-span-4">

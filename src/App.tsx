@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent } from 'react';
 import { CheckCircle2 } from 'lucide-react';
 import { AutoFillTable } from './components/AutoFillTable';
 import { HeaderNav } from './components/HeaderNav';
@@ -19,9 +19,19 @@ import type {
   PatientInfo,
   PharmacistSession,
   RegimenItem,
+  SavedPatientRecord,
   StickerSize,
 } from './types/pharmacy';
 import { clearSession, loadSession, saveSession } from './utils/auth';
+import {
+  deleteSavedPatient,
+  fetchCloudFormulary,
+  fetchSavedPatients,
+  getActiveSupabaseSession,
+  saveCloudFormulary,
+  savePatientToCloud,
+  signOutSupabase,
+} from './utils/cloudSync';
 import {
   buildPatientRegimenCsv,
   buildThermalStickers,
@@ -61,6 +71,10 @@ const INITIAL_NEW_DRUG_FORM: NewDrugFormState = {
 
 export default function App() {
   const [session, setSession] = useState<PharmacistSession | null>(() => loadSession());
+  const [savedPatients, setSavedPatients] = useState<SavedPatientRecord[]>([]);
+  const [isSavingCloud, setIsSavingCloud] = useState(false);
+  const cloudHydratedRef = useRef(false);
+
   const [formulary, setFormulary] = useState<FormularyDrug[]>(() =>
     loadFormulary(INITIAL_PHARMACY_FORMULARY)
   );
@@ -68,8 +82,42 @@ export default function App() {
   const [patientRegimen, setPatientRegimen] = useState<RegimenItem[]>(() => loadRegimen());
 
   useEffect(() => {
+    getActiveSupabaseSession().then((sbSession) => {
+      if (sbSession) {
+        setSession(sbSession);
+      }
+    });
+  }, []);
+
+  useEffect(() => {
+    if (session?.authSource !== 'supabase' || !session.userId) {
+      cloudHydratedRef.current = false;
+      setSavedPatients([]);
+      return;
+    }
+    const uid = session.userId;
+    Promise.all([fetchCloudFormulary(uid), fetchSavedPatients(uid)]).then(
+      ([cloudForm, patients]) => {
+        if (cloudForm && cloudForm.length > 0) {
+          setFormulary(cloudForm);
+        }
+        setSavedPatients(patients);
+        cloudHydratedRef.current = true;
+      }
+    );
+  }, [session?.authSource, session?.userId]);
+
+  useEffect(() => {
     saveFormulary(formulary);
-  }, [formulary]);
+    if (session?.authSource !== 'supabase' || !session.userId || !cloudHydratedRef.current) {
+      return;
+    }
+    const uid = session.userId;
+    const timer = setTimeout(() => {
+      saveCloudFormulary(uid, formulary);
+    }, 800);
+    return () => clearTimeout(timer);
+  }, [formulary, session?.authSource, session?.userId]);
 
   useEffect(() => {
     savePatient(patient);
@@ -453,13 +501,56 @@ export default function App() {
   };
 
   const handleLoginSuccess = (newSession: PharmacistSession, remember: boolean) => {
-    saveSession(newSession, remember);
+    if (newSession.authSource !== 'supabase') {
+      saveSession(newSession, remember);
+    }
     setSession(newSession);
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    if (session?.authSource === 'supabase') {
+      await signOutSupabase();
+    }
     clearSession();
     setSession(null);
+  };
+
+  const handleSaveToCloud = async () => {
+    if (session?.authSource !== 'supabase' || !session.userId) return;
+    setIsSavingCloud(true);
+    const { record, error } = await savePatientToCloud(
+      session.userId,
+      patient,
+      patientRegimen
+    );
+    setIsSavingCloud(false);
+    if (error || !record) {
+      showToast(`تعذر الحفظ السحابي: ${error || 'تأكد من تشغيل schema.sql في Supabase'}`);
+      return;
+    }
+    setSavedPatients((prev) => [record, ...prev]);
+    showToast(`تم حفظ ملف المريض "${record.patient_name}" سحابياً على Supabase!`);
+  };
+
+  const handleLoadSavedPatient = (rec: SavedPatientRecord) => {
+    setPatient({
+      fullName: rec.patient_name,
+      mrn: rec.mrn,
+      ward: rec.ward,
+      weightKg: rec.weight_kg,
+      baseDate: rec.base_date,
+      defaultStartTime: rec.default_start_time,
+    });
+    setPatientRegimen(Array.isArray(rec.regimen) ? rec.regimen : []);
+    showToast(`تم تحميل ملف "${rec.patient_name}" من السحابة.`);
+  };
+
+  const handleDeleteSavedPatient = async (id: string) => {
+    const ok = await deleteSavedPatient(id);
+    if (ok) {
+      setSavedPatients((prev) => prev.filter((p) => p.id !== id));
+      showToast('تم حذف سجل المريض من السحابة.');
+    }
   };
 
   if (!session) {
@@ -489,9 +580,15 @@ export default function App() {
       <PatientIntakeBar
         patient={patient}
         formularyCount={formulary.length}
+        isCloudUser={session.authSource === 'supabase'}
+        savedPatients={savedPatients}
+        isSavingCloud={isSavingCloud}
         onChange={setPatient}
         onLoadDemoCase={loadDemoCase}
         onClearPatient={handleClearPatient}
+        onSaveToCloud={handleSaveToCloud}
+        onLoadSavedPatient={handleLoadSavedPatient}
+        onDeleteSavedPatient={handleDeleteSavedPatient}
       />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6">

@@ -15,6 +15,20 @@ export interface PharmacistSession {
   displayName: string;
   role: PharmacistRole;
   loggedInAt: string;
+  userId?: string;
+  authSource?: 'local' | 'supabase';
+}
+
+export interface SavedPatientRecord {
+  id: string;
+  patient_name: string;
+  mrn: string;
+  ward: string;
+  weight_kg: number;
+  base_date: string;
+  default_start_time: string;
+  regimen: RegimenItem[];
+  updated_at: string;
 }
 
 export interface DrugPreset {
