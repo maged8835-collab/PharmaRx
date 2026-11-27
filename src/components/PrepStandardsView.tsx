@@ -1,7 +1,8 @@
-import { useState, type ChangeEvent, type FormEvent } from 'react';
-import { Download, Edit3, Plus, Upload } from 'lucide-react';
+import { useMemo, useState, type ChangeEvent, type FormEvent } from 'react';
+import { Download, Edit3, Globe, Loader2, Plus, Search, Upload } from 'lucide-react';
 import type { DoseUnit, FormularyDrug, FrequencyKey, NewDrugFormState } from '../types/pharmacy';
 import { FREQUENCY_CONFIG, VALID_DOSE_UNITS } from '../utils/calculations';
+import { searchRxNormIngredients, type RxNormIngredientMatch } from '../utils/rxnorm';
 
 interface PrepStandardsViewProps {
   formulary: FormularyDrug[];
@@ -36,6 +37,38 @@ export function PrepStandardsView({
   const [editPrepValue, setEditPrepValue] = useState('');
   const [editStabilityValue, setEditStabilityValue] = useState('');
 
+  const [rxQuery, setRxQuery] = useState('');
+  const [rxResults, setRxResults] = useState<RxNormIngredientMatch[]>([]);
+  const [isSearchingRx, setIsSearchingRx] = useState(false);
+
+  const [listSearch, setListSearch] = useState('');
+
+  const existingMatches = useMemo(() => {
+    const q = rxQuery.trim().toLowerCase();
+    if (q.length < 2) return [];
+    return formulary
+      .filter((d) => d.genericName.toLowerCase().includes(q))
+      .slice(0, 4);
+  }, [rxQuery, formulary]);
+
+  const filteredFormulary = useMemo(() => {
+    const q = listSearch.trim().toLowerCase();
+    if (!q) return formulary;
+    return formulary.filter(
+      (d) =>
+        d.genericName.toLowerCase().includes(q) ||
+        d.category.toLowerCase().includes(q)
+    );
+  }, [formulary, listSearch]);
+
+  const handleRxSearch = async () => {
+    if (rxQuery.trim().length < 2) return;
+    setIsSearchingRx(true);
+    const matches = await searchRxNormIngredients(rxQuery);
+    setRxResults(matches);
+    setIsSearchingRx(false);
+  };
+
   const startEditing = (drug: FormularyDrug) => {
     setEditingDrugId(drug.id);
     setEditConcValue(String(drug.finalConcMgMl));
@@ -61,30 +94,100 @@ export function PrepStandardsView({
         <div className="border-b border-slate-100 pb-3">
           <h2 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
             <Plus className="w-5 h-5 text-sky-600" />
-            <span>Add Drug or Bulk Import Formulary</span>
+            <span>Add Active Ingredient or Bulk Import</span>
           </h2>
           <p className="text-xs text-slate-500 mt-0.5" dir="rtl">
-            أضف أي دواء جديد أو ارفع شيت Excel/CSV كامل بأدوية مستشفاك دفعة واحدة
+            ابحث في الأدوية الحالية أو RxNorm ثم أضف المادة الفعالة أو ارفع شيت Excel/CSV كامل
           </p>
+        </div>
+
+        {/* Search Existing + RxNorm API */}
+        <div className="bg-sky-50/70 border border-sky-200/80 rounded-2xl p-3 space-y-2">
+          <div className="flex items-center justify-between text-[11px] font-bold text-sky-900">
+            <span className="flex items-center gap-1">
+              <Globe className="w-3.5 h-3.5 text-sky-600" />
+              <span>Search Active Ingredient (Existing + RxNorm)</span>
+            </span>
+          </div>
+          <div className="flex gap-1.5">
+            <input
+              type="text"
+              value={rxQuery}
+              onChange={(e) => setRxQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleRxSearch();
+                }
+              }}
+              placeholder="Search Active Ingredient (e.g. Ertapenem)..."
+              className="flex-1 px-3 py-1.5 text-xs bg-white border border-sky-200 rounded-xl outline-none focus:border-sky-500"
+            />
+            <button
+              type="button"
+              onClick={handleRxSearch}
+              disabled={isSearchingRx}
+              className="px-3 py-1.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold flex items-center gap-1 cursor-pointer"
+            >
+              {isSearchingRx ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <Search className="w-3.5 h-3.5" />
+              )}
+              <span>RxNorm</span>
+            </button>
+          </div>
+
+          {existingMatches.length > 0 && (
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-2 space-y-1">
+              <div className="text-[10px] font-extrabold text-amber-800" dir="rtl">
+                موجود بالفعل في القاعدة (اضغط للتعديل):
+              </div>
+              {existingMatches.map((d) => (
+                <button
+                  key={d.id}
+                  type="button"
+                  onClick={() => startEditing(d)}
+                  className="w-full text-left text-xs font-bold text-amber-950 hover:underline flex items-center justify-between cursor-pointer"
+                >
+                  <span>{d.genericName}</span>
+                  <span className="font-mono text-[10px]">
+                    {d.finalConcMgMl} {d.doseUnit}/mL
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
+
+          {rxResults.length > 0 && (
+            <div className="max-h-32 overflow-y-auto divide-y divide-sky-100 bg-white rounded-xl border border-sky-200/70">
+              {rxResults.map((m) => (
+                <button
+                  key={`${m.rxcui}_${m.name}`}
+                  type="button"
+                  onClick={() => {
+                    onNewDrugFormChange({
+                      ...newDrugForm,
+                      genericName: m.name,
+                      tradeName: m.name,
+                      reference: `RxNorm #${m.rxcui} (NIH NLM)`,
+                    });
+                    setRxResults([]);
+                  }}
+                  className="w-full text-left px-3 py-1.5 text-xs hover:bg-sky-50 flex items-center justify-between gap-2 cursor-pointer"
+                >
+                  <span className="font-bold text-slate-800 truncate">{m.name}</span>
+                  <span className="text-[10px] font-mono text-sky-700 shrink-0">
+                    RxCUI: {m.rxcui}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         <form onSubmit={onAddNewDrug} className="space-y-3">
           <div className="grid grid-cols-2 gap-2.5">
-            <div>
-              <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                Trade Name*
-              </label>
-              <input
-                type="text"
-                required
-                value={newDrugForm.tradeName}
-                onChange={(e) =>
-                  onNewDrugFormChange({ ...newDrugForm, tradeName: e.target.value })
-                }
-                placeholder="e.g. Maxipime"
-                className="w-full p-2 text-xs font-bold bg-slate-50 border border-slate-300 rounded-lg"
-              />
-            </div>
             <div>
               <label className="block text-[11px] font-bold text-slate-700 mb-1">
                 Active Ingredient*
@@ -94,30 +197,17 @@ export function PrepStandardsView({
                 required
                 value={newDrugForm.genericName}
                 onChange={(e) =>
-                  onNewDrugFormChange({ ...newDrugForm, genericName: e.target.value })
+                  onNewDrugFormChange({
+                    ...newDrugForm,
+                    genericName: e.target.value,
+                    tradeName: e.target.value,
+                  })
                 }
                 placeholder="e.g. Cefepime"
                 className="w-full p-2 text-xs font-bold bg-slate-50 border border-slate-300 rounded-lg"
               />
             </div>
-          </div>
 
-          <div className="grid grid-cols-2 gap-2.5">
-            <div>
-              <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                Arabic Name / Alias
-              </label>
-              <input
-                type="text"
-                dir="rtl"
-                value={newDrugForm.arabicName}
-                onChange={(e) =>
-                  onNewDrugFormChange({ ...newDrugForm, arabicName: e.target.value })
-                }
-                placeholder="ماكسيبيم"
-                className="w-full p-2 text-xs bg-slate-50 border border-slate-300 rounded-lg"
-              />
-            </div>
             <div>
               <label className="block text-[11px] font-bold text-slate-700 mb-1">
                 Specialty Category
@@ -275,7 +365,7 @@ export function PrepStandardsView({
 
           <button
             type="submit"
-            className="w-full py-2.5 bg-sky-700 hover:bg-sky-800 text-white font-extrabold text-xs rounded-xl shadow-2xs"
+            className="w-full py-2.5 bg-sky-700 hover:bg-sky-800 text-white font-extrabold text-xs rounded-xl shadow-2xs cursor-pointer"
           >
             + Save to Master Formulary
           </button>
@@ -288,7 +378,7 @@ export function PrepStandardsView({
           <div className="flex flex-wrap gap-2">
             <button
               onClick={onExportJson}
-              className="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-900 text-white flex items-center gap-1"
+              className="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-900 text-white flex items-center gap-1 cursor-pointer"
             >
               <Download className="w-3.5 h-3.5" />
               <span>Export JSON ({formulary.length})</span>
@@ -313,19 +403,30 @@ export function PrepStandardsView({
       </div>
 
       <div className="lg:col-span-7 bg-white rounded-3xl border border-slate-200/80 shadow-[0_2px_16px_rgba(15,23,42,0.03)] p-5 sm:p-6">
-        <div className="border-b border-slate-100 pb-3 mb-3 flex items-center justify-between">
+        <div className="border-b border-slate-100 pb-3 mb-3 flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 className="text-base font-extrabold text-slate-900">
-              Pharmacy Standard Final Concentrations ({formulary.length} Drugs)
+              Pharmacy Standard Final Concentrations ({filteredFormulary.length} Drugs)
             </h2>
             <p className="text-xs text-slate-500" dir="rtl">
-              اضغط على Edit لتعديل التركيز النهائي القياسي لأي دواء حسب ثبات 24 ساعة في صيدليتك
+              اضغط على Edit لتعديل التركيز النهائي القياسي لأي مادة فعالة
             </p>
+          </div>
+
+          <div className="relative min-w-[200px]">
+            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
+            <input
+              type="text"
+              value={listSearch}
+              onChange={(e) => setListSearch(e.target.value)}
+              placeholder="Filter standards..."
+              className="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-sky-500"
+            />
           </div>
         </div>
 
         <div className="divide-y divide-slate-200 max-h-[650px] overflow-y-auto">
-          {formulary.map((drug) => {
+          {filteredFormulary.map((drug) => {
             const isEditing = editingDrugId === drug.id;
             return (
               <div key={drug.id} className="py-3 px-2 hover:bg-slate-50">
@@ -384,13 +485,13 @@ export function PrepStandardsView({
                     <div className="flex justify-end gap-2 pt-1">
                       <button
                         onClick={() => setEditingDrugId(null)}
-                        className="px-3 py-1 text-xs font-bold bg-white border border-slate-300 rounded-lg"
+                        className="px-3 py-1 text-xs font-bold bg-white border border-slate-300 rounded-lg cursor-pointer"
                       >
                         Cancel
                       </button>
                       <button
                         onClick={() => handleSaveEdit(drug.id)}
-                        className="px-3 py-1 text-xs font-bold bg-sky-700 text-white rounded-lg"
+                        className="px-3 py-1 text-xs font-bold bg-sky-700 text-white rounded-lg cursor-pointer"
                       >
                         Save Standard
                       </button>
@@ -417,7 +518,7 @@ export function PrepStandardsView({
 
                     <button
                       onClick={() => startEditing(drug)}
-                      className="px-2.5 py-1.5 rounded-lg text-xs font-bold bg-slate-100 hover:bg-sky-50 text-slate-700 hover:text-sky-800 border border-slate-200 flex items-center gap-1 shrink-0"
+                      className="px-2.5 py-1.5 rounded-lg text-xs font-bold bg-slate-100 hover:bg-sky-50 text-slate-700 hover:text-sky-800 border border-slate-200 flex items-center gap-1 shrink-0 cursor-pointer"
                     >
                       <Edit3 className="w-3.5 h-3.5" />
                       <span>Edit</span>

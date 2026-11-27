@@ -70,7 +70,7 @@ export function AutoFillTable({
               type="text"
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
-              placeholder="ابحث بالمادة الفعالة (Vancomycin, Meropenem, Furosemide, Ketorolac) أو بالعربي..."
+              placeholder="ابحث بالمادة الفعالة (Vancomycin, Meropenem, Furosemide, Ketorolac)..."
               className="w-full pl-10 pr-9 py-2.5 text-sm bg-slate-50/80 border border-slate-200 rounded-2xl focus:bg-white focus:ring-2 focus:ring-sky-500/25 focus:border-sky-500 outline-none transition-all"
             />
             {searchQuery && (
@@ -195,9 +195,6 @@ export function AutoFillTable({
                             HIGH-ALERT
                           </span>
                         )}
-                      </div>
-                      <div dir="rtl" className="text-xs text-slate-500 mt-0.5 font-medium">
-                        {drug.arabicName}
                       </div>
                       <div className="flex items-center gap-2 mt-1.5 text-[10px] text-slate-400">
                         <span className="bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-semibold">

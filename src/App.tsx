@@ -836,6 +836,7 @@ export default function App() {
         <QuickAddModal
           isOpen={isQuickAddModalOpen}
           weightKg={patient.weightKg}
+          formulary={formulary}
           newDrugForm={newDrugForm}
           onChange={setNewDrugForm}
           onClose={() => setIsQuickAddModalOpen(false)}

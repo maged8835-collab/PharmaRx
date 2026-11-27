@@ -1,12 +1,13 @@
-import { useState, type FormEvent } from 'react';
+import { useMemo, useState, type FormEvent } from 'react';
 import { Globe, Loader2, Search, X } from 'lucide-react';
-import type { DoseUnit, FrequencyKey, NewDrugFormState } from '../types/pharmacy';
+import type { DoseUnit, FormularyDrug, FrequencyKey, NewDrugFormState } from '../types/pharmacy';
 import { FREQUENCY_CONFIG, VALID_DOSE_UNITS } from '../utils/calculations';
 import { searchRxNormIngredients, type RxNormIngredientMatch } from '../utils/rxnorm';
 
 interface QuickAddModalProps {
   isOpen: boolean;
   weightKg: number | string;
+  formulary: FormularyDrug[];
   newDrugForm: NewDrugFormState;
   onChange: (form: NewDrugFormState) => void;
   onClose: () => void;
@@ -16,6 +17,7 @@ interface QuickAddModalProps {
 export function QuickAddModal({
   isOpen,
   weightKg,
+  formulary,
   newDrugForm,
   onChange,
   onClose,
@@ -24,6 +26,14 @@ export function QuickAddModal({
   const [rxQuery, setRxQuery] = useState('');
   const [rxResults, setRxResults] = useState<RxNormIngredientMatch[]>([]);
   const [isSearchingRx, setIsSearchingRx] = useState(false);
+
+  const existingMatches = useMemo(() => {
+    const q = rxQuery.trim().toLowerCase();
+    if (q.length < 2) return [];
+    return formulary
+      .filter((d) => d.genericName.toLowerCase().includes(q))
+      .slice(0, 4);
+  }, [rxQuery, formulary]);
 
   if (!isOpen) return null;
 
@@ -41,10 +51,10 @@ export function QuickAddModal({
         <div className="flex items-center justify-between border-b border-slate-100 pb-3">
           <div>
             <h3 className="text-base font-extrabold text-slate-900">
-              + Add Medication to Formulary (Supabase)
+              + Add Active Ingredient to Formulary
             </h3>
             <p className="text-xs text-slate-500" dir="rtl">
-              ابحث في RxNorm أو أضف المادة الفعالة وسيتم حسابها لوزن ({weightKg} كجم)
+              ابحث في الأدوية الموجودة أو RxNorm وأضف المادة الفعالة لوزن ({weightKg} كجم)
             </p>
           </div>
           <button
@@ -55,14 +65,13 @@ export function QuickAddModal({
           </button>
         </div>
 
-        {/* RxNorm Lookup */}
+        {/* Unified Existing + RxNorm Lookup */}
         <div className="bg-sky-50/70 border border-sky-200/80 rounded-2xl p-3 space-y-2">
           <div className="flex items-center justify-between text-[11px] font-bold text-sky-900">
             <span className="flex items-center gap-1">
               <Globe className="w-3.5 h-3.5 text-sky-600" />
-              <span>RxNorm Global Lookup (NIH NLM)</span>
+              <span>Search Active Ingredient (Formulary + RxNorm API)</span>
             </span>
-            <span dir="rtl">جلب الاسم العلمي المعياري</span>
           </div>
           <div className="flex gap-1.5">
             <input
@@ -75,7 +84,7 @@ export function QuickAddModal({
                   handleRxSearch();
                 }
               }}
-              placeholder="Search global drug (e.g. Ertapenem, Tigecycline)..."
+              placeholder="Type Active Ingredient (e.g. Ertapenem, Tigecycline)..."
               className="flex-1 px-3 py-1.5 text-xs bg-white border border-sky-200 rounded-xl outline-none focus:border-sky-500"
             />
             <button
@@ -89,9 +98,28 @@ export function QuickAddModal({
               ) : (
                 <Search className="w-3.5 h-3.5" />
               )}
-              <span>بحث</span>
+              <span>RxNorm</span>
             </button>
           </div>
+
+          {existingMatches.length > 0 && (
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-2 space-y-1">
+              <div className="text-[10px] font-extrabold text-amber-800" dir="rtl">
+                موجود بالفعل في قاعدة البيانات:
+              </div>
+              {existingMatches.map((d) => (
+                <div
+                  key={d.id}
+                  className="text-xs font-bold text-amber-950 flex items-center justify-between"
+                >
+                  <span>{d.genericName}</span>
+                  <span className="font-mono text-[10px]">
+                    {d.finalConcMgMl} {d.doseUnit}/mL
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
 
           {rxResults.length > 0 && (
             <div className="max-h-32 overflow-y-auto divide-y divide-sky-100 bg-white rounded-xl border border-sky-200/70">
@@ -141,18 +169,24 @@ export function QuickAddModal({
                 className="w-full p-2 text-xs font-bold bg-slate-50 border border-slate-300 rounded-lg"
               />
             </div>
+
             <div>
               <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                Arabic Name
+                Specialty Category
               </label>
-              <input
-                type="text"
-                dir="rtl"
-                value={newDrugForm.arabicName}
-                onChange={(e) => onChange({ ...newDrugForm, arabicName: e.target.value })}
-                placeholder="إيرتابينيم"
+              <select
+                value={newDrugForm.category}
+                onChange={(e) => onChange({ ...newDrugForm, category: e.target.value })}
                 className="w-full p-2 text-xs font-bold bg-slate-50 border border-slate-300 rounded-lg"
-              />
+              >
+                <option value="Antimicrobials">Antimicrobials</option>
+                <option value="Analgesia & ICU">Analgesia &amp; ICU</option>
+                <option value="Cardiology & Cath">Cardiology &amp; Cath</option>
+                <option value="GI & Antiemetics">GI &amp; Antiemetics</option>
+                <option value="Steroids & Blood">Steroids &amp; Blood</option>
+                <option value="Neurology">Neurology</option>
+                <option value="Electrolytes & Endocrine">Electrolytes &amp; Endocrine</option>
+              </select>
             </div>
           </div>
 
