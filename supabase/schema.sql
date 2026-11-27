@@ -193,7 +193,7 @@ returns table (
 language plpgsql
 security definer
 set search_path = public
-as $$
+as $body$
 declare
   v_row public.patient_regimens%rowtype;
 begin
@@ -218,19 +218,21 @@ begin
   select * into v_row from public.patient_regimens where id = p_patient_id;
   return query select false, v_row.locked_by_user_id, v_row.locked_by_name, v_row.locked_at;
 end;
-$$;
+$body$;
 
 create or replace function public.release_patient_lock(p_patient_id uuid)
 returns void
-language sql
+language plpgsql
 security definer
 set search_path = public
-as $$
+as $body$
+begin
   update public.patient_regimens
   set locked_by_user_id = null, locked_by_name = '', locked_at = null
   where id = p_patient_id
     and (locked_by_user_id = auth.uid() or public.is_admin());
-$$;
+end;
+$body$;
 
 -- 4. Platform Activity & Audit Logs
 create table if not exists public.activity_logs (
