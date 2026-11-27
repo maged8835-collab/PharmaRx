@@ -1,7 +1,8 @@
-import type { FormEvent } from 'react';
-import { X } from 'lucide-react';
+import { useState, type FormEvent } from 'react';
+import { Globe, Loader2, Search, X } from 'lucide-react';
 import type { DoseUnit, FrequencyKey, NewDrugFormState } from '../types/pharmacy';
 import { FREQUENCY_CONFIG, VALID_DOSE_UNITS } from '../utils/calculations';
+import { searchRxNormIngredients, type RxNormIngredientMatch } from '../utils/rxnorm';
 
 interface QuickAddModalProps {
   isOpen: boolean;
@@ -20,43 +21,107 @@ export function QuickAddModal({
   onClose,
   onSubmit,
 }: QuickAddModalProps) {
+  const [rxQuery, setRxQuery] = useState('');
+  const [rxResults, setRxResults] = useState<RxNormIngredientMatch[]>([]);
+  const [isSearchingRx, setIsSearchingRx] = useState(false);
+
   if (!isOpen) return null;
+
+  const handleRxSearch = async () => {
+    if (rxQuery.trim().length < 2) return;
+    setIsSearchingRx(true);
+    const matches = await searchRxNormIngredients(rxQuery);
+    setRxResults(matches);
+    setIsSearchingRx(false);
+  };
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-lg w-full p-5 space-y-4 animate-scale-in">
+      <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl max-w-lg w-full p-6 space-y-4 animate-scale-in max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between border-b border-slate-100 pb-3">
           <div>
             <h3 className="text-base font-extrabold text-slate-900">
-              + Quick Add Custom Drug to Pharmacy
+              + Add Medication to Formulary (Supabase)
             </h3>
             <p className="text-xs text-slate-500" dir="rtl">
-              أضف أي دواء غير موجود وسيتم حسابه فوراً لوزن المريض الحالي ({weightKg} كجم)
+              ابحث في RxNorm أو أضف المادة الفعالة وسيتم حسابها لوزن ({weightKg} كجم)
             </p>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg"
+            className="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
+        {/* RxNorm Lookup */}
+        <div className="bg-sky-50/70 border border-sky-200/80 rounded-2xl p-3 space-y-2">
+          <div className="flex items-center justify-between text-[11px] font-bold text-sky-900">
+            <span className="flex items-center gap-1">
+              <Globe className="w-3.5 h-3.5 text-sky-600" />
+              <span>RxNorm Global Lookup (NIH NLM)</span>
+            </span>
+            <span dir="rtl">جلب الاسم العلمي المعياري</span>
+          </div>
+          <div className="flex gap-1.5">
+            <input
+              type="text"
+              value={rxQuery}
+              onChange={(e) => setRxQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleRxSearch();
+                }
+              }}
+              placeholder="Search global drug (e.g. Ertapenem, Tigecycline)..."
+              className="flex-1 px-3 py-1.5 text-xs bg-white border border-sky-200 rounded-xl outline-none focus:border-sky-500"
+            />
+            <button
+              type="button"
+              onClick={handleRxSearch}
+              disabled={isSearchingRx}
+              className="px-3 py-1.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold flex items-center gap-1 cursor-pointer"
+            >
+              {isSearchingRx ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <Search className="w-3.5 h-3.5" />
+              )}
+              <span>بحث</span>
+            </button>
+          </div>
+
+          {rxResults.length > 0 && (
+            <div className="max-h-32 overflow-y-auto divide-y divide-sky-100 bg-white rounded-xl border border-sky-200/70">
+              {rxResults.map((m) => (
+                <button
+                  key={`${m.rxcui}_${m.name}`}
+                  type="button"
+                  onClick={() => {
+                    onChange({
+                      ...newDrugForm,
+                      genericName: m.name,
+                      tradeName: m.name,
+                      reference: `RxNorm #${m.rxcui} (NIH NLM)`,
+                    });
+                    setRxResults([]);
+                  }}
+                  className="w-full text-left px-3 py-1.5 text-xs hover:bg-sky-50 flex items-center justify-between gap-2 cursor-pointer"
+                >
+                  <span className="font-bold text-slate-800 truncate">{m.name}</span>
+                  <span className="text-[10px] font-mono text-sky-700 shrink-0">
+                    RxCUI: {m.rxcui}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
         <form onSubmit={onSubmit} className="space-y-3">
           <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                Trade Name (System)*
-              </label>
-              <input
-                type="text"
-                required
-                value={newDrugForm.tradeName}
-                onChange={(e) => onChange({ ...newDrugForm, tradeName: e.target.value })}
-                placeholder="e.g. Invanz"
-                className="w-full p-2 text-xs font-bold bg-slate-50 border border-slate-300 rounded-lg"
-              />
-            </div>
             <div>
               <label className="block text-[11px] font-bold text-slate-700 mb-1">
                 Active Ingredient*
@@ -65,8 +130,27 @@ export function QuickAddModal({
                 type="text"
                 required
                 value={newDrugForm.genericName}
-                onChange={(e) => onChange({ ...newDrugForm, genericName: e.target.value })}
+                onChange={(e) =>
+                  onChange({
+                    ...newDrugForm,
+                    genericName: e.target.value,
+                    tradeName: e.target.value,
+                  })
+                }
                 placeholder="e.g. Ertapenem"
+                className="w-full p-2 text-xs font-bold bg-slate-50 border border-slate-300 rounded-lg"
+              />
+            </div>
+            <div>
+              <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                Arabic Name
+              </label>
+              <input
+                type="text"
+                dir="rtl"
+                value={newDrugForm.arabicName}
+                onChange={(e) => onChange({ ...newDrugForm, arabicName: e.target.value })}
+                placeholder="إيرتابينيم"
                 className="w-full p-2 text-xs font-bold bg-slate-50 border border-slate-300 rounded-lg"
               />
             </div>
@@ -182,15 +266,15 @@ export function QuickAddModal({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-xs font-bold bg-slate-100 text-slate-700 rounded-xl"
+              className="px-4 py-2 text-xs font-bold bg-slate-100 text-slate-700 rounded-xl cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-5 py-2 text-xs font-extrabold bg-sky-700 hover:bg-sky-800 text-white rounded-xl"
+              className="px-5 py-2 text-xs font-extrabold bg-sky-600 hover:bg-sky-700 text-white rounded-xl cursor-pointer"
             >
-              Save &amp; Auto-Calculate Now
+              Save to Supabase
             </button>
           </div>
         </form>

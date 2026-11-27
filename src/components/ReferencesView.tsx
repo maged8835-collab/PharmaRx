@@ -70,6 +70,15 @@ const CORE_REFERENCES: ClinicalReferenceItem[] = [
     arabicSummary: 'ضوابط حديثي الولادة (≤ 28 يوم) وتنبيهات الأدوية التي تُطرح كلوياً وتحتاج تعديل الجرعة.',
     badge: 'NICU & Renal',
   },
+  {
+    id: 'rxnorm',
+    title: 'U.S. National Library of Medicine (NLM) — RxNorm API',
+    edition: 'NIH / Lister Hill National Center',
+    scope: 'Standardized global Active Ingredient terminology (RxCUI) used in medication lookup & import',
+    arabicSummary: 'موسوعة المصطلحات الدوائية القياسية العالمية (RxNorm / RxCUI) لجلب الأسماء العلمية المعتمدة للأدوية.',
+    url: 'https://lhncbc.nlm.nih.gov/RxNav/APIs/index.html',
+    badge: 'Global Terminology API',
+  },
 ];
 
 export function ReferencesView({ formulary }: ReferencesViewProps) {
@@ -118,6 +127,9 @@ export function ReferencesView({ formulary }: ReferencesViewProps) {
           </div>
           <p>
             هذه المنصة أداة مساعدة للصيادلة الإكلينيكيين لتسريع الحسابات الوريدية وتقليل الأخطاء اليدوية، ولا تغني عن التقييم الإكلينيكي أو مراجعة بروتوكول المستشفى المعتمد، خاصة في حالات حديثي الولادة (NICU)، القصور الكلوي أو الكبدي، والتسريب الوريدي المركزي مقابل الطرفي.
+          </p>
+          <p className="text-[11px] text-amber-800/90 pt-1" dir="ltr">
+            This product uses publicly available data from the U.S. National Library of Medicine (NLM), National Institutes of Health, Department of Health and Human Services; NLM is not responsible for the product and does not endorse or recommend this or any other product.
           </p>
         </div>
       </div>
