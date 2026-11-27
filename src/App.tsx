@@ -93,6 +93,23 @@ const INITIAL_NEW_DRUG_FORM: NewDrugFormState = {
 };
 
 export default function App() {
+  const [isDark, setIsDark] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('pediasurgrx_theme_v1') === 'dark';
+    } catch {
+      return false;
+    }
+  });
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', isDark);
+    try {
+      localStorage.setItem('pediasurgrx_theme_v1', isDark ? 'dark' : 'light');
+    } catch {
+      // Ignore storage error
+    }
+  }, [isDark]);
+
   const [session, setSession] = useState<PharmacistSession | null>(null);
   const [isCheckingSession, setIsCheckingSession] = useState(true);
 
@@ -623,8 +640,10 @@ export default function App() {
         stickersCount={allThermalStickers.length}
         activeTab={activeTab}
         hasActivePatient={Boolean(activePatientId)}
+        isDark={isDark}
         session={session}
         onTabChange={handleTabChange}
+        onToggleTheme={() => setIsDark((prev) => !prev)}
         onLogout={handleLogout}
       />
 

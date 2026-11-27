@@ -3,9 +3,11 @@ import {
   Database,
   FileSpreadsheet,
   LogOut,
+  Moon,
   Printer,
   Shield,
   Sparkles,
+  Sun,
   Syringe,
   Users,
 } from 'lucide-react';
@@ -18,8 +20,10 @@ interface HeaderNavProps {
   stickersCount: number;
   activeTab: ActiveTab;
   hasActivePatient: boolean;
+  isDark: boolean;
   session: PharmacistSession;
   onTabChange: (tab: ActiveTab) => void;
+  onToggleTheme: () => void;
   onLogout: () => void;
 }
 
@@ -30,8 +34,10 @@ export function HeaderNav({
   stickersCount,
   activeTab,
   hasActivePatient,
+  isDark,
   session,
   onTabChange,
+  onToggleTheme,
   onLogout,
 }: HeaderNavProps) {
   const tabs: Array<{
@@ -132,7 +138,19 @@ export function HeaderNav({
           })}
         </nav>
 
-        <div className="flex items-center gap-2.5 shrink-0">
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            onClick={onToggleTheme}
+            className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 border border-slate-200/70 transition-colors cursor-pointer"
+            title={isDark ? 'الوضع النهاري (Light Mode)' : 'الوضع الليلي (Night Mode)'}
+          >
+            {isDark ? (
+              <Sun className="w-4 h-4 text-amber-400" />
+            ) : (
+              <Moon className="w-4 h-4 text-slate-700" />
+            )}
+          </button>
+
           <div className="hidden sm:flex items-center gap-2.5 bg-slate-50 border border-slate-200/80 pl-1.5 pr-3 py-1 rounded-full">
             <div className="w-7 h-7 rounded-full bg-gradient-to-br from-slate-800 to-slate-900 text-white text-[11px] font-extrabold flex items-center justify-center">
               {initials || 'Rx'}

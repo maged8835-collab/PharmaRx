@@ -1,13 +1,91 @@
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
 @layer base {
   body {
     font-family: 'Plus Jakarta Sans', 'Cairo', system-ui, -apple-system, sans-serif;
+    transition: background-color 0.2s ease, color 0.2s ease;
   }
 
   .font-mono {
     font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
   }
+}
+
+/* Night Mode (Dark Theme) — Print-safe for thermal labels */
+html.dark body {
+  background-color: #090e1a;
+  color: #f1f5f9;
+}
+
+html.dark .bg-\[\#F6F9FC\] {
+  background-color: #090e1a !important;
+}
+
+html.dark .bg-white:not(.thermal-sticker-card) {
+  background-color: #111827 !important;
+}
+
+html.dark .bg-white\/85 {
+  background-color: rgba(17, 24, 39, 0.88) !important;
+}
+
+html.dark .bg-slate-50,
+html.dark .bg-slate-50\/70,
+html.dark .bg-slate-50\/80,
+html.dark .bg-slate-50\/90 {
+  background-color: #1e293b !important;
+}
+
+html.dark .bg-slate-100,
+html.dark .bg-slate-100\/80,
+html.dark .bg-slate-100\/90 {
+  background-color: #1e293b !important;
+}
+
+html.dark .border-slate-100,
+html.dark .border-slate-200,
+html.dark .border-slate-200\/70,
+html.dark .border-slate-200\/80,
+html.dark .border-slate-300 {
+  border-color: #293548 !important;
+}
+
+html.dark .divide-slate-100 > :not(:last-child),
+html.dark .divide-slate-200 > :not(:last-child) {
+  border-color: #1e293b !important;
+}
+
+html.dark .text-slate-900:not(.thermal-sticker-card):not(.thermal-sticker-card *),
+html.dark .text-slate-800:not(.thermal-sticker-card):not(.thermal-sticker-card *) {
+  color: #f1f5f9 !important;
+}
+
+html.dark .text-slate-700,
+html.dark .text-slate-600 {
+  color: #cbd5e1 !important;
+}
+
+html.dark .text-slate-500,
+html.dark .text-slate-400 {
+  color: #94a3b8 !important;
+}
+
+html.dark input:not([type="checkbox"]),
+html.dark select {
+  color: #f1f5f9;
+}
+
+html.dark option {
+  background-color: #111827;
+  color: #f1f5f9;
+}
+
+html.dark .thermal-sticker-card,
+html.dark .thermal-sticker-card * {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  border-color: #0f172a !important;
 }
 
 @keyframes fadeInUp {
@@ -110,5 +188,7 @@
     page-break-inside: avoid !important;
     border: 1.5pt solid #000000 !important;
     box-shadow: none !important;
+    background: white !important;
+    color: black !important;
   }
 }
