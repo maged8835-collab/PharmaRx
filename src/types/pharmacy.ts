@@ -6,7 +6,7 @@ export type StickerSize = '50x30' | '60x40' | '70x40';
 
 export type LabelNameMode = 'trade' | 'generic';
 
-export type ActiveTab = 'autofill' | 'regimen' | 'labels' | 'config' | 'admin';
+export type ActiveTab = 'patients' | 'autofill' | 'regimen' | 'labels' | 'config' | 'admin';
 
 export type PharmacistRole = 'Clinical Pharmacist' | 'Senior Pharmacist' | 'Admin';
 
@@ -40,6 +40,7 @@ export interface ActivityLogRecord {
 
 export interface SavedPatientRecord {
   id: string;
+  user_id?: string;
   patient_name: string;
   mrn: string;
   ward: string;
@@ -50,6 +51,9 @@ export interface SavedPatientRecord {
   base_date: string;
   default_start_time: string;
   regimen: RegimenItem[];
+  locked_by_user_id?: string | null;
+  locked_by_name?: string | null;
+  locked_at?: string | null;
   updated_at: string;
 }
 

@@ -7,6 +7,7 @@ import {
   Shield,
   Sparkles,
   Syringe,
+  Users,
 } from 'lucide-react';
 import type { ActiveTab, PharmacistSession } from '../types/pharmacy';
 
@@ -16,6 +17,7 @@ interface HeaderNavProps {
   regimenCount: number;
   stickersCount: number;
   activeTab: ActiveTab;
+  hasActivePatient: boolean;
   session: PharmacistSession;
   onTabChange: (tab: ActiveTab) => void;
   onLogout: () => void;
@@ -27,6 +29,7 @@ export function HeaderNav({
   regimenCount,
   stickersCount,
   activeTab,
+  hasActivePatient,
   session,
   onTabChange,
   onLogout,
@@ -37,9 +40,29 @@ export function HeaderNav({
     icon: typeof Sparkles;
     count?: number;
   }> = [
-    { id: 'autofill', label: 'Formulary', icon: Sparkles, count: autoFilledCount },
-    { id: 'regimen', label: 'Patient Sheet', icon: FileSpreadsheet, count: regimenCount },
-    { id: 'labels', label: 'Labels', icon: Printer, count: stickersCount },
+    { id: 'patients', label: 'Patients', icon: Users },
+    ...(hasActivePatient
+      ? [
+          {
+            id: 'regimen' as ActiveTab,
+            label: 'Patient Sheet',
+            icon: FileSpreadsheet,
+            count: regimenCount,
+          },
+          {
+            id: 'autofill' as ActiveTab,
+            label: 'Add Meds',
+            icon: Sparkles,
+            count: autoFilledCount,
+          },
+          {
+            id: 'labels' as ActiveTab,
+            label: 'Labels',
+            icon: Printer,
+            count: stickersCount,
+          },
+        ]
+      : []),
     { id: 'config', label: 'Standards', icon: Database },
     ...(session.role === 'Admin'
       ? [{ id: 'admin' as ActiveTab, label: 'Admin', icon: Shield }]
@@ -54,7 +77,6 @@ export function HeaderNav({
   return (
     <header className="sticky top-0 z-30 bg-white/85 backdrop-blur-xl border-b border-slate-200/80 shadow-[0_1px_12px_rgba(15,23,42,0.04)]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
-        {/* Brand */}
         <div className="flex items-center gap-3 shrink-0">
           <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-teal-500 to-emerald-600 text-white flex items-center justify-center shadow-md shadow-teal-600/20">
             <Syringe className="w-5 h-5" />
@@ -74,7 +96,6 @@ export function HeaderNav({
           </div>
         </div>
 
-        {/* Segmented Navigation */}
         <nav className="flex items-center gap-1 bg-slate-100/90 p-1 rounded-2xl border border-slate-200/70 overflow-x-auto max-w-full">
           {tabs.map((tab) => {
             const Icon = tab.icon;
@@ -111,7 +132,6 @@ export function HeaderNav({
           })}
         </nav>
 
-        {/* User Pill */}
         <div className="flex items-center gap-2.5 shrink-0">
           <div className="hidden sm:flex items-center gap-2.5 bg-slate-50 border border-slate-200/80 pl-1.5 pr-3 py-1 rounded-full">
             <div className="w-7 h-7 rounded-full bg-gradient-to-br from-slate-800 to-slate-900 text-white text-[11px] font-extrabold flex items-center justify-center">

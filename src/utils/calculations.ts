@@ -304,6 +304,95 @@ export function buildPatientRegimenCsv(
   return '\uFEFF' + [headers.map(escapeCsvCell).join(','), ...rows].join('\n');
 }
 
+export function buildShiftRegimenCsv(
+  patients: Array<{
+    patient_name: string;
+    mrn: string;
+    ward: string;
+    weight_kg: number;
+    base_date: string;
+    default_start_time: string;
+    regimen: RegimenItem[];
+  }>,
+  formulary: FormularyDrug[]
+): string {
+  const headers = [
+    'Patient Name',
+    'MRN / ID',
+    'Ward / Unit',
+    'Weight (kg)',
+    'Active Ingredient',
+    'Unit',
+    'Dose (/kg)',
+    'Calculated Dose',
+    'Standard Final Conc (/mL)',
+    'Final Volume (mL)',
+    'Route',
+    'Frequency',
+    '24h Administration Schedule',
+    'Diluent & Preparation Instructions',
+  ];
+
+  const allRows: string[] = [];
+  for (const p of patients) {
+    const pInfo: PatientInfo = {
+      fullName: p.patient_name,
+      mrn: p.mrn,
+      ward: p.ward,
+      weightKg: p.weight_kg,
+      baseDate: p.base_date,
+      defaultStartTime: p.default_start_time,
+    };
+    const computed = computePatientRegimen(p.regimen || [], formulary, pInfo);
+    if (computed.length === 0) {
+      allRows.push(
+        [
+          escapeCsvCell(p.patient_name),
+          escapeCsvCell(p.mrn),
+          escapeCsvCell(p.ward),
+          p.weight_kg,
+          escapeCsvCell('No medications'),
+          '',
+          '',
+          '',
+          '',
+          '',
+          '',
+          '',
+          '',
+          '',
+        ].join(',')
+      );
+      continue;
+    }
+    for (const item of computed) {
+      const scheduleSummary = item.scheduleSlots
+        .map((s) => `${s.timeStr} (${s.dateStr})`)
+        .join(' | ');
+      allRows.push(
+        [
+          escapeCsvCell(p.patient_name),
+          escapeCsvCell(p.mrn),
+          escapeCsvCell(p.ward),
+          p.weight_kg,
+          escapeCsvCell(item.genericName),
+          escapeCsvCell(item.doseUnit),
+          item.doseMgPerKg,
+          item.finalDoseMg,
+          item.finalConcMgMl,
+          item.finalVolumeMl,
+          escapeCsvCell(item.route),
+          escapeCsvCell(item.frequency),
+          escapeCsvCell(scheduleSummary),
+          escapeCsvCell(item.prepInstructions),
+        ].join(',')
+      );
+    }
+  }
+
+  return '\uFEFF' + [headers.map(escapeCsvCell).join(','), ...allRows].join('\n');
+}
+
 function splitCsvLine(line: string): string[] {
   const result: string[] = [];
   let current = '';

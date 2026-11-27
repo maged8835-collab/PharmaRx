@@ -318,6 +318,87 @@ export async function bulkUpsertMedicationsToSupabase(
   return { ok: !error, error: error?.message || null };
 }
 
+export async function fetchSharedPatients(): Promise<SavedPatientRecord[]> {
+  if (!supabase) return [];
+  const { data, error } = await supabase
+    .from('patient_regimens')
+    .select('*')
+    .order('updated_at', { ascending: false })
+    .limit(100);
+
+  if (error || !Array.isArray(data)) return [];
+  return data as SavedPatientRecord[];
+}
+
+export async function updatePatientInCloud(
+  patientId: string,
+  patient: PatientInfo,
+  regimen: RegimenItem[]
+): Promise<{ record: SavedPatientRecord | null; error: string | null }> {
+  if (!supabase) {
+    return { record: null, error: 'Supabase غير متصل.' };
+  }
+  const { data, error } = await supabase
+    .from('patient_regimens')
+    .update({
+      patient_name: patient.fullName || 'Unnamed Patient',
+      mrn: patient.mrn || '',
+      ward: patient.ward || '',
+      weight_kg: Number(patient.weightKg) || 10,
+      age_value: String(patient.ageValue ?? ''),
+      age_unit: patient.ageUnit || 'years',
+      renal_impairment: Boolean(patient.renalImpairment),
+      base_date: patient.baseDate,
+      default_start_time: patient.defaultStartTime,
+      regimen,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', patientId)
+    .select()
+    .single();
+
+  if (error) {
+    return { record: null, error: error.message };
+  }
+  return { record: data as SavedPatientRecord, error: null };
+}
+
+export async function acquirePatientLock(
+  patientId: string,
+  userName: string
+): Promise<{
+  acquired: boolean;
+  lockedByUserId: string | null;
+  lockedByName: string;
+}> {
+  if (!supabase) {
+    return { acquired: true, lockedByUserId: null, lockedByName: '' };
+  }
+  const { data, error } = await supabase.rpc('acquire_patient_lock', {
+    p_patient_id: patientId,
+    p_user_name: userName,
+  });
+
+  if (error || !Array.isArray(data) || data.length === 0) {
+    return { acquired: true, lockedByUserId: null, lockedByName: '' };
+  }
+  const row = data[0] as {
+    acquired: boolean;
+    locked_by_user_id: string | null;
+    locked_by_name: string | null;
+  };
+  return {
+    acquired: Boolean(row.acquired),
+    lockedByUserId: row.locked_by_user_id || null,
+    lockedByName: row.locked_by_name || '',
+  };
+}
+
+export async function releasePatientLock(patientId: string): Promise<void> {
+  if (!supabase) return;
+  await supabase.rpc('release_patient_lock', { p_patient_id: patientId });
+}
+
 export async function fetchSavedPatients(
   userId: string
 ): Promise<SavedPatientRecord[]> {

@@ -22,6 +22,7 @@ interface PatientRegimenSheetProps {
   patient: PatientInfo;
   computedRegimen: ComputedRegimenItem[];
   stickersCount: number;
+  isReadOnly?: boolean;
   onGoToAutoFill: () => void;
   onExportCsv: () => void;
   onGoToLabels: () => void;
@@ -33,6 +34,7 @@ export function PatientRegimenSheet({
   patient,
   computedRegimen,
   stickersCount,
+  isReadOnly = false,
   onGoToAutoFill,
   onExportCsv,
   onGoToLabels,
@@ -249,13 +251,15 @@ export function PatientRegimenSheet({
                       <span>السحب</span>
                     </button>
 
-                    <button
-                      onClick={() => onRemoveItem(item.regimenId)}
-                      className="p-2 text-rose-600 hover:bg-rose-50 rounded-xl cursor-pointer"
-                      title="Remove from patient sheet"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                    {!isReadOnly && (
+                      <button
+                        onClick={() => onRemoveItem(item.regimenId)}
+                        className="p-2 text-rose-600 hover:bg-rose-50 rounded-xl cursor-pointer"
+                        title="Remove from patient sheet"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
                   </div>
                 </div>
 
@@ -314,11 +318,12 @@ export function PatientRegimenSheet({
                         Frequency
                       </label>
                       <select
+                        disabled={isReadOnly}
                         value={item.frequency}
                         onChange={(e) =>
                           onUpdateItem(item.regimenId, 'frequency', e.target.value as FrequencyKey)
                         }
-                        className="w-full p-2 text-xs font-bold bg-slate-50 border border-slate-300 rounded-lg"
+                        className="w-full p-2 text-xs font-bold bg-slate-50 border border-slate-300 rounded-lg disabled:opacity-60"
                       >
                         {Object.entries(FREQUENCY_CONFIG).map(([key, cfg]) => (
                           <option key={key} value={key}>
@@ -334,9 +339,10 @@ export function PatientRegimenSheet({
                       </label>
                       <input
                         type="time"
+                        disabled={isReadOnly}
                         value={item.startTime}
                         onChange={(e) => onUpdateItem(item.regimenId, 'startTime', e.target.value)}
-                        className="w-full p-2 text-xs font-bold bg-slate-50 border border-slate-300 rounded-lg"
+                        className="w-full p-2 text-xs font-bold bg-slate-50 border border-slate-300 rounded-lg disabled:opacity-60"
                       />
                     </div>
                   </div>

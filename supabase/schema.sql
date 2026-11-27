@@ -119,7 +119,7 @@ create policy "Authenticated users can update medications"
   using (true)
   with check (true);
 
--- 3. Saved patient regimens (cloud patient history)
+-- 3. Saved patient regimens (shared across pharmacy shifts with active-pharmacist lock)
 create table if not exists public.patient_regimens (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users(id) on delete cascade,
@@ -133,17 +133,26 @@ create table if not exists public.patient_regimens (
   base_date text not null,
   default_start_time text not null default '12:00',
   regimen jsonb not null default '[]'::jsonb,
+  locked_by_user_id uuid references auth.users(id) on delete set null,
+  locked_by_name text default '',
+  locked_at timestamptz,
   updated_at timestamptz not null default now()
 );
+
+alter table public.patient_regimens
+  add column if not exists locked_by_user_id uuid references auth.users(id) on delete set null,
+  add column if not exists locked_by_name text default '',
+  add column if not exists locked_at timestamptz;
 
 alter table public.patient_regimens enable row level security;
 
 drop policy if exists "Users can read own patients" on public.patient_regimens;
 drop policy if exists "Users can read own patients or admin reads all" on public.patient_regimens;
-create policy "Users can read own patients or admin reads all"
+drop policy if exists "Authenticated pharmacists can read all patients" on public.patient_regimens;
+create policy "Authenticated pharmacists can read all patients"
   on public.patient_regimens for select
   to authenticated
-  using (auth.uid() = user_id or public.is_admin());
+  using (true);
 
 drop policy if exists "Users can insert own patients" on public.patient_regimens;
 create policy "Users can insert own patients"
@@ -152,17 +161,76 @@ create policy "Users can insert own patients"
   with check (auth.uid() = user_id);
 
 drop policy if exists "Users can update own patients" on public.patient_regimens;
-create policy "Users can update own patients"
+drop policy if exists "Authenticated pharmacists can update unlocked or own-locked patients" on public.patient_regimens;
+create policy "Authenticated pharmacists can update unlocked or own-locked patients"
   on public.patient_regimens for update
   to authenticated
-  using (auth.uid() = user_id or public.is_admin())
-  with check (auth.uid() = user_id or public.is_admin());
+  using (
+    locked_by_user_id is null
+    or locked_by_user_id = auth.uid()
+    or locked_at < now() - interval '2 minutes'
+    or public.is_admin()
+  )
+  with check (true);
 
 drop policy if exists "Users can delete own patients" on public.patient_regimens;
 create policy "Users can delete own patients"
   on public.patient_regimens for delete
   to authenticated
   using (auth.uid() = user_id or public.is_admin());
+
+-- Atomic lock acquisition (prevents two pharmacists editing same patient simultaneously)
+create or replace function public.acquire_patient_lock(
+  p_patient_id uuid,
+  p_user_name text
+)
+returns table (
+  acquired boolean,
+  locked_by_user_id uuid,
+  locked_by_name text,
+  locked_at timestamptz
+)
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_row public.patient_regimens%rowtype;
+begin
+  update public.patient_regimens
+  set
+    locked_by_user_id = auth.uid(),
+    locked_by_name = p_user_name,
+    locked_at = now()
+  where id = p_patient_id
+    and (
+      patient_regimens.locked_by_user_id is null
+      or patient_regimens.locked_by_user_id = auth.uid()
+      or patient_regimens.locked_at < now() - interval '2 minutes'
+    )
+  returning * into v_row;
+
+  if found then
+    return query select true, v_row.locked_by_user_id, v_row.locked_by_name, v_row.locked_at;
+    return;
+  end if;
+
+  select * into v_row from public.patient_regimens where id = p_patient_id;
+  return query select false, v_row.locked_by_user_id, v_row.locked_by_name, v_row.locked_at;
+end;
+$$;
+
+create or replace function public.release_patient_lock(p_patient_id uuid)
+returns void
+language sql
+security definer
+set search_path = public
+as $$
+  update public.patient_regimens
+  set locked_by_user_id = null, locked_by_name = '', locked_at = null
+  where id = p_patient_id
+    and (locked_by_user_id = auth.uid() or public.is_admin());
+$$;
 
 -- 4. Platform Activity & Audit Logs
 create table if not exists public.activity_logs (

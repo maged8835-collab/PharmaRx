@@ -23,6 +23,7 @@ interface AutoFillTableProps {
   regimenDrugIds: Set<string>;
   weightKg: number | string;
   addedFeedbackId: string | null;
+  isReadOnly?: boolean;
   onSearchChange: (q: string) => void;
   onCategoryChange: (cat: string) => void;
   onToggleSelectedOnly: () => void;
@@ -46,6 +47,7 @@ export function AutoFillTable({
   regimenDrugIds,
   weightKg,
   addedFeedbackId,
+  isReadOnly = false,
   onSearchChange,
   onCategoryChange,
   onToggleSelectedOnly,
@@ -316,10 +318,13 @@ export function AutoFillTable({
                     <td className="py-4 px-5 text-center whitespace-nowrap">
                       <button
                         onClick={() => onAddDrug(drug)}
-                        className={`px-3.5 py-2 rounded-xl text-xs font-extrabold shadow-xs transition-all flex items-center justify-center gap-1 mx-auto cursor-pointer ${
-                          isJustAdded
-                            ? 'bg-emerald-600 text-white scale-105'
-                            : 'bg-teal-600 hover:bg-teal-700 text-white hover:-translate-y-0.5'
+                        disabled={isReadOnly}
+                        className={`px-3.5 py-2 rounded-xl text-xs font-extrabold shadow-xs transition-all flex items-center justify-center gap-1 mx-auto ${
+                          isReadOnly
+                            ? 'bg-slate-200 text-slate-500 cursor-not-allowed'
+                            : isJustAdded
+                              ? 'bg-emerald-600 text-white scale-105 cursor-pointer'
+                              : 'bg-teal-600 hover:bg-teal-700 text-white hover:-translate-y-0.5 cursor-pointer'
                         }`}
                       >
                         {isJustAdded ? (
@@ -330,7 +335,7 @@ export function AutoFillTable({
                         ) : (
                           <>
                             <Plus className="w-3.5 h-3.5" />
-                            <span>Add</span>
+                            <span>{isReadOnly ? 'Locked' : 'Add'}</span>
                           </>
                         )}
                       </button>
