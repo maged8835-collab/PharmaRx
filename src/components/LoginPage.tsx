@@ -68,7 +68,13 @@ export function LoginPage({ onLoginSuccess }: LoginPageProps) {
     setIsLoading(false);
 
     if (res.error || !res.session) {
-      setError('البريد الإلكتروني أو كلمة المرور غير صحيحة.');
+      if (res.error?.toLowerCase().includes('email not confirmed')) {
+        setError('الحساب غير مُفعّل بعد — افتح بريدك الإلكتروني واضغط رابط التفعيل، أو فعّله من Supabase.');
+      } else if (res.error?.toLowerCase().includes('invalid login credentials')) {
+        setError('البريد الإلكتروني أو كلمة المرور غير صحيحة.');
+      } else {
+        setError(res.error || 'تعذر تسجيل الدخول.');
+      }
       return;
     }
     onLoginSuccess(res.session);
