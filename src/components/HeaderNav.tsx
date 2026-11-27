@@ -112,7 +112,7 @@ export function HeaderNav({
               <button
                 key={tab.id}
                 onClick={() => onTabChange(tab.id)}
-                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition-all duration-200 whitespace-nowrap cursor-pointer ${
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 whitespace-nowrap cursor-pointer ${
                   isActive
                     ? 'bg-white text-slate-900 shadow-sm ring-1 ring-slate-200/80'
                     : 'text-slate-500 hover:text-slate-900 hover:bg-white/50'

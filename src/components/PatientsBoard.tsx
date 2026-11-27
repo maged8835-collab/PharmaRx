@@ -164,6 +164,7 @@ export function PatientsBoard({
             <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
             <input
               type="text"
+              dir="rtl"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="ابحث باسم المريض، رقم الملف (MRN)، أو القسم..."

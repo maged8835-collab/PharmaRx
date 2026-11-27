@@ -97,7 +97,7 @@ export function PatientIntakeBar({
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3 items-end">
-          <div className="lg:col-span-4">
+          <div className="lg:col-span-3">
             <label className="block text-[11px] font-bold text-slate-500 mb-1 flex justify-between">
               <span>Patient Name</span>
               <span dir="rtl">اسم المريض</span>
@@ -165,7 +165,7 @@ export function PatientIntakeBar({
             </div>
           </div>
 
-          <div className="lg:col-span-2 grid grid-cols-2 gap-1.5">
+          <div className="lg:col-span-3 grid grid-cols-2 gap-2">
             <div>
               <label className="block text-[10px] font-bold text-slate-500 mb-1">
                 Date
