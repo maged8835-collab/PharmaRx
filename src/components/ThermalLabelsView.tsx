@@ -26,7 +26,7 @@ export function ThermalLabelsView({
       <div className="bg-white p-5 sm:p-6 rounded-3xl border border-slate-200/80 shadow-[0_2px_16px_rgba(15,23,42,0.03)] flex flex-wrap items-center justify-between gap-4">
         <div>
           <h2 className="text-lg font-extrabold text-slate-900 flex items-center gap-2">
-            <Printer className="w-5 h-5 text-teal-700" />
+            <Printer className="w-5 h-5 text-sky-700" />
             <span>Thermal Sticker Batch Print Studio ({stickers.length} Labels)</span>
           </h2>
           <p className="text-xs text-slate-500 mt-0.5" dir="rtl">
@@ -51,7 +51,7 @@ export function ThermalLabelsView({
             ))}
           </div>
 
-          <div className="flex items-center bg-teal-50 border border-teal-200 px-3 py-1.5 rounded-xl text-xs font-bold text-teal-900">
+          <div className="flex items-center bg-sky-50 border border-sky-200 px-3 py-1.5 rounded-xl text-xs font-bold text-sky-900">
             Active Ingredient Only
           </div>
 
@@ -60,7 +60,7 @@ export function ThermalLabelsView({
             disabled={stickers.length === 0}
             className="px-5 py-2.5 rounded-xl text-sm font-extrabold bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-white shadow-sm flex items-center gap-2"
           >
-            <Printer className="w-4 h-4 text-teal-400" />
+            <Printer className="w-4 h-4 text-sky-400" />
             <span>Print All Labels ({stickers.length})</span>
           </button>
         </div>
@@ -73,7 +73,7 @@ export function ThermalLabelsView({
           </p>
           <button
             onClick={onGoToAutoFill}
-            className="px-4 py-2 bg-teal-700 text-white rounded-xl text-xs font-bold"
+            className="px-4 py-2 bg-sky-700 text-white rounded-xl text-xs font-bold"
           >
             Select Medications
           </button>

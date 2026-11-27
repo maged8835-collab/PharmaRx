@@ -117,7 +117,7 @@ export function PatientsBoard({
       <div className="bg-white rounded-3xl border border-slate-200/80 shadow-[0_2px_16px_rgba(15,23,42,0.03)] p-5 space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-teal-500 to-emerald-600 text-white flex items-center justify-center shadow-md shadow-teal-600/20">
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-sky-500 to-sky-600 text-white flex items-center justify-center shadow-md shadow-sky-600/20">
               <Users className="w-5 h-5" />
             </div>
             <div>
@@ -153,7 +153,7 @@ export function PatientsBoard({
               onClick={() => setIsNewModalOpen(true)}
               className="px-4 py-2.5 rounded-2xl text-xs font-extrabold bg-slate-900 hover:bg-slate-800 text-white shadow-sm flex items-center gap-1.5 transition-all hover:-translate-y-0.5 cursor-pointer"
             >
-              <UserPlus className="w-4 h-4 text-teal-400" />
+              <UserPlus className="w-4 h-4 text-sky-400" />
               <span>+ مريض جديد</span>
             </button>
           </div>
@@ -167,7 +167,7 @@ export function PatientsBoard({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="ابحث باسم المريض، رقم الملف (MRN)، أو القسم..."
-              className="w-full pl-10 pr-8 py-2.5 text-sm bg-slate-50/80 border border-slate-200 rounded-2xl focus:bg-white focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none"
+              className="w-full pl-10 pr-8 py-2.5 text-sm bg-slate-50/80 border border-slate-200 rounded-2xl focus:bg-white focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 outline-none"
             />
             {searchQuery && (
               <button
@@ -186,7 +186,7 @@ export function PatientsBoard({
                 onClick={() => setSelectedWard(ward)}
                 className={`px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
                   selectedWard === ward
-                    ? 'bg-teal-600 text-white shadow-sm'
+                    ? 'bg-sky-600 text-white shadow-sm'
                     : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                 }`}
               >
@@ -209,7 +209,7 @@ export function PatientsBoard({
           </p>
           <button
             onClick={() => setIsNewModalOpen(true)}
-            className="px-5 py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-2xl text-xs font-extrabold inline-flex items-center gap-1.5 cursor-pointer"
+            className="px-5 py-2.5 bg-sky-600 hover:bg-sky-700 text-white rounded-2xl text-xs font-extrabold inline-flex items-center gap-1.5 cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             <span>إضافة مريض جديد</span>
@@ -231,7 +231,7 @@ export function PatientsBoard({
                 className={`group bg-white rounded-3xl border p-5 shadow-[0_2px_16px_rgba(15,23,42,0.03)] transition-all duration-200 flex flex-col justify-between gap-4 ${
                   lockedByOther
                     ? 'border-amber-300/90 bg-amber-50/20'
-                    : 'border-slate-200/80 hover:border-teal-400 hover:shadow-[0_8px_28px_rgba(13,148,136,0.08)] hover:-translate-y-0.5'
+                    : 'border-slate-200/80 hover:border-sky-400 hover:shadow-[0_8px_28px_rgba(13,148,136,0.08)] hover:-translate-y-0.5'
                 }`}
               >
                 <div className="space-y-3">
@@ -268,7 +268,7 @@ export function PatientsBoard({
                     <div className="flex items-center gap-3 mt-1 text-xs text-slate-500 font-mono">
                       <span>MRN: {rec.mrn || '—'}</span>
                       <span>•</span>
-                      <span className="font-extrabold text-teal-700">
+                      <span className="font-extrabold text-sky-700">
                         {rec.weight_kg} kg
                       </span>
                     </div>
@@ -276,7 +276,7 @@ export function PatientsBoard({
 
                   {/* Clinical Tags */}
                   <div className="flex flex-wrap items-center gap-1.5">
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-xs font-bold bg-teal-50 text-teal-800 border border-teal-200/70">
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-xs font-bold bg-sky-50 text-sky-800 border border-sky-200/70">
                       <Pill className="w-3.5 h-3.5" />
                       <span>{medCount} علاجات</span>
                     </span>
@@ -303,7 +303,7 @@ export function PatientsBoard({
                     className={`flex-1 py-2.5 px-4 rounded-2xl text-xs font-extrabold flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
                       lockedByOther
                         ? 'bg-amber-100 hover:bg-amber-200 text-amber-950'
-                        : 'bg-teal-600 hover:bg-teal-700 text-white shadow-xs'
+                        : 'bg-sky-600 hover:bg-sky-700 text-white shadow-xs'
                     }`}
                   >
                     <span>
@@ -372,7 +372,7 @@ export function PatientsBoard({
                   value={newForm.fullName}
                   onChange={(e) => setNewForm({ ...newForm, fullName: e.target.value })}
                   placeholder="مثال: براء محمد عبدالسلام"
-                  className="w-full p-2.5 text-sm font-bold bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-teal-500"
+                  className="w-full p-2.5 text-sm font-bold bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-sky-500"
                 />
               </div>
 
@@ -402,7 +402,7 @@ export function PatientsBoard({
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-extrabold text-teal-700 mb-1">
+                  <label className="block text-[11px] font-extrabold text-sky-700 mb-1">
                     Weight (kg)*
                   </label>
                   <input
@@ -412,7 +412,7 @@ export function PatientsBoard({
                     required
                     value={newForm.weightKg}
                     onChange={(e) => setNewForm({ ...newForm, weightKg: e.target.value })}
-                    className="w-full p-2 text-sm font-mono font-black bg-teal-50 border-2 border-teal-500 rounded-xl"
+                    className="w-full p-2 text-sm font-mono font-black bg-sky-50 border-2 border-sky-500 rounded-xl"
                   />
                 </div>
               </div>
@@ -465,7 +465,7 @@ export function PatientsBoard({
                 <button
                   type="submit"
                   disabled={isCreating}
-                  className="px-5 py-2 text-xs font-extrabold bg-teal-600 hover:bg-teal-700 disabled:opacity-60 text-white rounded-xl cursor-pointer"
+                  className="px-5 py-2 text-xs font-extrabold bg-sky-600 hover:bg-sky-700 disabled:opacity-60 text-white rounded-xl cursor-pointer"
                 >
                   {isCreating ? 'جاري الإنشاء...' : 'إنشاء وفتح الملف'}
                 </button>

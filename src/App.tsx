@@ -617,7 +617,7 @@ export default function App() {
 
   if (isCheckingSession) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center text-teal-300 text-sm font-bold">
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center text-sky-300 text-sm font-bold">
         جاري التحقق من الجلسة...
       </div>
     );
@@ -648,7 +648,7 @@ export default function App() {
       />
 
       {configToast && (
-        <div className="bg-gradient-to-r from-emerald-800 to-teal-800 text-white px-4 py-2.5 text-xs font-bold text-center flex items-center justify-center gap-2 shadow-md animate-fade-in-up">
+        <div className="bg-gradient-to-r from-sky-700 to-sky-800 text-white px-4 py-2.5 text-xs font-bold text-center flex items-center justify-center gap-2 shadow-md animate-fade-in-up">
           <CheckCircle2 className="w-4 h-4 text-emerald-300" />
           <span>{configToast}</span>
         </div>

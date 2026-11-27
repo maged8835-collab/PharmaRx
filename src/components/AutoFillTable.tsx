@@ -71,7 +71,7 @@ export function AutoFillTable({
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
               placeholder="ابحث بالمادة الفعالة (Vancomycin, Meropenem, Furosemide, Ketorolac) أو بالعربي..."
-              className="w-full pl-10 pr-9 py-2.5 text-sm bg-slate-50/80 border border-slate-200 rounded-2xl focus:bg-white focus:ring-2 focus:ring-teal-500/25 focus:border-teal-500 outline-none transition-all"
+              className="w-full pl-10 pr-9 py-2.5 text-sm bg-slate-50/80 border border-slate-200 rounded-2xl focus:bg-white focus:ring-2 focus:ring-sky-500/25 focus:border-sky-500 outline-none transition-all"
             />
             {searchQuery && (
               <button
@@ -100,7 +100,7 @@ export function AutoFillTable({
               onClick={onOpenQuickAdd}
               className="px-4 py-2.5 rounded-2xl text-xs font-extrabold bg-slate-900 hover:bg-slate-800 text-white flex items-center gap-1.5 shadow-sm transition-all hover:-translate-y-0.5 cursor-pointer"
             >
-              <Plus className="w-4 h-4 text-teal-400" />
+              <Plus className="w-4 h-4 text-sky-400" />
               <span>Add Custom Drug</span>
             </button>
           </div>
@@ -120,7 +120,7 @@ export function AutoFillTable({
                 onClick={() => onCategoryChange(cat)}
                 className={`px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1.5 cursor-pointer ${
                   active
-                    ? 'bg-teal-600 text-white shadow-sm shadow-teal-600/20'
+                    ? 'bg-sky-600 text-white shadow-sm shadow-sky-600/20'
                     : 'bg-slate-100/80 text-slate-600 hover:bg-slate-200/70 hover:text-slate-900'
                 }`}
               >
@@ -141,16 +141,16 @@ export function AutoFillTable({
       {/* Subtle Summary Strip */}
       <div className="flex flex-wrap items-center justify-between gap-2 px-2 text-xs text-slate-500">
         <div className="flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-teal-600 shrink-0" />
+          <Sparkles className="w-4 h-4 text-sky-600 shrink-0" />
           <span>
             Showing <strong className="text-slate-800">{autoFilledDrugs.length}</strong>{' '}
             medications auto-calculated for{' '}
-            <strong className="text-teal-700 font-mono">{weightKg} kg</strong>
+            <strong className="text-sky-700 font-mono">{weightKg} kg</strong>
           </span>
         </div>
         <button
           onClick={onOpenRegimenTab}
-          className="inline-flex items-center gap-1.5 text-xs font-extrabold text-teal-700 hover:text-teal-900 bg-teal-50 hover:bg-teal-100 border border-teal-200/80 px-3.5 py-1.5 rounded-full transition-colors cursor-pointer"
+          className="inline-flex items-center gap-1.5 text-xs font-extrabold text-sky-700 hover:text-sky-900 bg-sky-50 hover:bg-sky-100 border border-sky-200/80 px-3.5 py-1.5 rounded-full transition-colors cursor-pointer"
         >
           <span>Open Patient Sheet ({regimenCount})</span>
           <ArrowRight className="w-3.5 h-3.5" />
@@ -180,7 +180,7 @@ export function AutoFillTable({
                 return (
                   <tr
                     key={drug.id}
-                    className={`hover:bg-teal-50/35 transition-colors align-top ${
+                    className={`hover:bg-sky-50/35 transition-colors align-top ${
                       drug.highAlert ? 'bg-rose-50/20' : ''
                     }`}
                   >
@@ -214,7 +214,7 @@ export function AutoFillTable({
                       <select
                         value={drug.activePreset.id}
                         onChange={(e) => onSelectPreset(drug, e.target.value)}
-                        className="w-full p-2 text-xs font-bold bg-slate-50/80 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none"
+                        className="w-full p-2 text-xs font-bold bg-slate-50/80 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 outline-none"
                       >
                         {drug.presets.map((p) => (
                           <option key={p.id} value={p.id}>
@@ -232,7 +232,7 @@ export function AutoFillTable({
                             min="0"
                             value={drug.effectiveDosePerKg}
                             onChange={(e) => onInlineDoseChange(drug.id, e.target.value)}
-                            className="w-16 px-2 py-0.5 text-xs font-mono font-bold bg-white border border-slate-200 rounded-lg text-slate-900 focus:border-teal-500 outline-none"
+                            className="w-16 px-2 py-0.5 text-xs font-mono font-bold bg-white border border-slate-200 rounded-lg text-slate-900 focus:border-sky-500 outline-none"
                           />
                         </label>
                         <span className="text-slate-400 font-mono">
@@ -283,11 +283,11 @@ export function AutoFillTable({
                     </td>
 
                     <td className="py-4 px-3 text-center whitespace-nowrap">
-                      <div className="inline-flex flex-col items-center justify-center bg-gradient-to-br from-teal-50 to-emerald-50 border border-teal-200/80 rounded-2xl px-3.5 py-2 min-w-[82px]">
-                        <div className="text-xl font-black text-teal-800 font-mono tabular-nums leading-none">
+                      <div className="inline-flex flex-col items-center justify-center bg-gradient-to-br from-sky-50 to-sky-100/70 border border-sky-200/80 rounded-2xl px-3.5 py-2 min-w-[82px]">
+                        <div className="text-xl font-black text-sky-800 font-mono tabular-nums leading-none">
                           {drug.finalVolumeMl}
                         </div>
-                        <div className="text-[10px] font-extrabold text-teal-600 mt-0.5">
+                        <div className="text-[10px] font-extrabold text-sky-600 mt-0.5">
                           mL
                         </div>
                       </div>
@@ -324,7 +324,7 @@ export function AutoFillTable({
                             ? 'bg-slate-200 text-slate-500 cursor-not-allowed'
                             : isJustAdded
                               ? 'bg-emerald-600 text-white scale-105 cursor-pointer'
-                              : 'bg-teal-600 hover:bg-teal-700 text-white hover:-translate-y-0.5 cursor-pointer'
+                              : 'bg-sky-600 hover:bg-sky-700 text-white hover:-translate-y-0.5 cursor-pointer'
                         }`}
                       >
                         {isJustAdded ? (

@@ -61,7 +61,7 @@ export function PatientIntakeBar({
               <span>كل المرضى</span>
             </button>
 
-            <div className="w-8 h-8 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center">
               <User className="w-4 h-4" />
             </div>
             <div>
@@ -79,7 +79,7 @@ export function PatientIntakeBar({
               onClick={onOpenPumpCalc}
               className="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all hover:-translate-y-0.5 cursor-pointer"
             >
-              <Gauge className="w-3.5 h-3.5 text-teal-400" />
+              <Gauge className="w-3.5 h-3.5 text-sky-400" />
               <span>Pump mL/hr</span>
             </button>
 
@@ -87,7 +87,7 @@ export function PatientIntakeBar({
               <button
                 onClick={onSaveToCloud}
                 disabled={isSavingCloud}
-                className="px-3.5 py-1.5 rounded-xl bg-teal-600 hover:bg-teal-700 disabled:opacity-60 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm shadow-teal-600/20 transition-all hover:-translate-y-0.5 cursor-pointer"
+                className="px-3.5 py-1.5 rounded-xl bg-sky-600 hover:bg-sky-700 disabled:opacity-60 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm shadow-sky-600/20 transition-all hover:-translate-y-0.5 cursor-pointer"
               >
                 <CloudUpload className="w-3.5 h-3.5" />
                 <span>{isSavingCloud ? 'جاري الحفظ...' : 'حفظ التعديلات'}</span>
@@ -109,7 +109,7 @@ export function PatientIntakeBar({
               value={patient.fullName}
               onChange={(e) => onChange({ ...patient, fullName: e.target.value })}
               placeholder="اسم المريض..."
-              className="w-full px-3.5 py-2.5 text-sm font-bold bg-slate-50/70 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-teal-500/25 focus:border-teal-500 outline-none transition-all disabled:opacity-60"
+              className="w-full px-3.5 py-2.5 text-sm font-bold bg-slate-50/70 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-sky-500/25 focus:border-sky-500 outline-none transition-all disabled:opacity-60"
             />
           </div>
 
@@ -124,7 +124,7 @@ export function PatientIntakeBar({
               value={patient.mrn}
               onChange={(e) => onChange({ ...patient, mrn: e.target.value })}
               placeholder="20234098"
-              className="w-full px-3 py-2.5 text-sm font-bold font-mono tabular-nums bg-slate-50/70 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-teal-500/25 focus:border-teal-500 outline-none transition-all disabled:opacity-60"
+              className="w-full px-3 py-2.5 text-sm font-bold font-mono tabular-nums bg-slate-50/70 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-sky-500/25 focus:border-sky-500 outline-none transition-all disabled:opacity-60"
             />
           </div>
 
@@ -139,12 +139,12 @@ export function PatientIntakeBar({
               value={patient.ward}
               onChange={(e) => onChange({ ...patient, ward: e.target.value })}
               placeholder="PICU / قسطرة"
-              className="w-full px-3 py-2.5 text-sm font-bold bg-slate-50/70 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-teal-500/25 focus:border-teal-500 outline-none transition-all disabled:opacity-60"
+              className="w-full px-3 py-2.5 text-sm font-bold bg-slate-50/70 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-sky-500/25 focus:border-sky-500 outline-none transition-all disabled:opacity-60"
             />
           </div>
 
           <div className="lg:col-span-2">
-            <label className="block text-[11px] font-extrabold text-teal-700 mb-1 flex justify-between">
+            <label className="block text-[11px] font-extrabold text-sky-700 mb-1 flex justify-between">
               <span>WEIGHT*</span>
               <span dir="rtl">الوزن (كجم)</span>
             </label>
@@ -157,9 +157,9 @@ export function PatientIntakeBar({
                 disabled={isReadOnly}
                 value={patient.weightKg}
                 onChange={(e) => onChange({ ...patient, weightKg: e.target.value })}
-                className="w-full px-3.5 py-2 text-lg font-black font-mono tabular-nums bg-gradient-to-r from-teal-50 to-emerald-50 border-2 border-teal-500/80 text-teal-950 rounded-xl focus:ring-4 focus:ring-teal-500/15 focus:border-teal-600 outline-none transition-all disabled:opacity-60"
+                className="w-full px-3.5 py-2 text-lg font-black font-mono tabular-nums bg-gradient-to-r from-sky-50 to-sky-100/70 border-2 border-sky-500/80 text-sky-950 rounded-xl focus:ring-4 focus:ring-sky-500/15 focus:border-sky-600 outline-none transition-all disabled:opacity-60"
               />
-              <span className="absolute right-3 top-2.5 text-xs font-extrabold text-teal-700">
+              <span className="absolute right-3 top-2.5 text-xs font-extrabold text-sky-700">
                 kg
               </span>
             </div>
@@ -175,7 +175,7 @@ export function PatientIntakeBar({
                 disabled={isReadOnly}
                 value={patient.baseDate}
                 onChange={(e) => onChange({ ...patient, baseDate: e.target.value })}
-                className="w-full px-2 py-2.5 text-xs font-bold bg-slate-50/70 border border-slate-200 rounded-xl focus:bg-white focus:border-teal-500 outline-none disabled:opacity-60"
+                className="w-full px-2 py-2.5 text-xs font-bold bg-slate-50/70 border border-slate-200 rounded-xl focus:bg-white focus:border-sky-500 outline-none disabled:opacity-60"
               />
             </div>
             <div>
@@ -189,7 +189,7 @@ export function PatientIntakeBar({
                 onChange={(e) =>
                   onChange({ ...patient, defaultStartTime: e.target.value })
                 }
-                className="w-full px-2 py-2.5 text-xs font-bold bg-slate-50/70 border border-slate-200 rounded-xl focus:bg-white focus:border-teal-500 outline-none disabled:opacity-60"
+                className="w-full px-2 py-2.5 text-xs font-bold bg-slate-50/70 border border-slate-200 rounded-xl focus:bg-white focus:border-sky-500 outline-none disabled:opacity-60"
               />
             </div>
           </div>

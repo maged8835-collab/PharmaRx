@@ -84,15 +84,15 @@ export function HeaderNav({
     <header className="sticky top-0 z-30 bg-white/85 backdrop-blur-xl border-b border-slate-200/80 shadow-[0_1px_12px_rgba(15,23,42,0.04)]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
         <div className="flex items-center gap-3 shrink-0">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-teal-500 to-emerald-600 text-white flex items-center justify-center shadow-md shadow-teal-600/20">
+          <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-sky-500 to-sky-600 text-white flex items-center justify-center shadow-md shadow-sky-600/20">
             <Syringe className="w-5 h-5" />
           </div>
           <div className="leading-tight">
             <div className="flex items-center gap-2">
               <h1 className="text-lg font-extrabold tracking-tight text-slate-900">
-                PediaSurg<span className="text-teal-600">Rx</span>
+                PediaSurg<span className="text-sky-600">Rx</span>
               </h1>
-              <span className="hidden sm:inline-flex items-center text-[11px] font-bold bg-teal-50 text-teal-700 border border-teal-200/80 px-2 py-0.5 rounded-full">
+              <span className="hidden sm:inline-flex items-center text-[11px] font-bold bg-sky-50 text-sky-700 border border-sky-200/80 px-2 py-0.5 rounded-full">
                 {formularyCount} Meds
               </span>
             </div>
@@ -118,7 +118,7 @@ export function HeaderNav({
               >
                 <Icon
                   className={`w-3.5 h-3.5 ${
-                    isActive ? 'text-teal-600' : 'text-slate-400'
+                    isActive ? 'text-sky-600' : 'text-slate-400'
                   }`}
                 />
                 <span>{tab.label}</span>
@@ -126,7 +126,7 @@ export function HeaderNav({
                   <span
                     className={`px-1.5 py-0.5 rounded-full text-[10px] font-mono font-bold ${
                       isActive
-                        ? 'bg-teal-50 text-teal-700'
+                        ? 'bg-sky-50 text-sky-700'
                         : 'bg-slate-200/70 text-slate-600'
                     }`}
                   >
@@ -160,7 +160,7 @@ export function HeaderNav({
                 <span>{session.displayName}</span>
                 {session.authSource === 'supabase' && (
                   <span title="Supabase Cloud" className="inline-flex">
-                    <Cloud className="w-3 h-3 text-teal-600" />
+                    <Cloud className="w-3 h-3 text-sky-600" />
                   </span>
                 )}
               </div>

@@ -82,21 +82,21 @@ export function LoginPage({ onLoginSuccess }: LoginPageProps) {
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-slate-950 flex flex-col justify-center items-center p-4">
-      <div className="pointer-events-none absolute -top-24 -left-24 w-96 h-96 rounded-full bg-teal-500/20 blur-3xl animate-float-slow" />
+      <div className="pointer-events-none absolute -top-24 -left-24 w-96 h-96 rounded-full bg-sky-500/20 blur-3xl animate-float-slow" />
       <div className="pointer-events-none absolute -bottom-24 -right-24 w-96 h-96 rounded-full bg-cyan-500/15 blur-3xl animate-float-slow-reverse" />
 
       <div className="relative z-10 w-full max-w-md bg-white rounded-3xl shadow-2xl shadow-black/50 border border-slate-200/80 overflow-hidden animate-scale-in">
-        <div className="bg-gradient-to-br from-slate-950 via-slate-900 to-teal-950 text-white px-6 py-7 text-center space-y-2 border-b border-slate-800">
-          <div className="inline-flex items-center justify-center bg-teal-500/20 border border-teal-400/30 p-3.5 rounded-2xl mb-1 shadow-lg shadow-teal-500/10">
-            <Syringe className="w-7 h-7 text-teal-300" />
+        <div className="bg-gradient-to-br from-slate-950 via-slate-900 to-sky-950 text-white px-6 py-7 text-center space-y-2 border-b border-slate-800">
+          <div className="inline-flex items-center justify-center bg-sky-500/20 border border-sky-400/30 p-3.5 rounded-2xl mb-1 shadow-lg shadow-sky-500/10">
+            <Syringe className="w-7 h-7 text-sky-300" />
           </div>
           <h1 className="text-2xl font-extrabold tracking-tight">
-            PediaSurg<span className="text-teal-400">Rx</span>
+            PediaSurg<span className="text-sky-400">Rx</span>
           </h1>
           <p className="text-xs text-slate-300" dir="rtl">
             بوابة الصيدلي الإكلينيكي — تسجيل الدخول السحابي عبر Supabase
           </p>
-          <div className="inline-flex items-center gap-1.5 text-[11px] font-bold bg-teal-500/15 text-teal-200 border border-teal-400/25 px-2.5 py-0.5 rounded-full">
+          <div className="inline-flex items-center gap-1.5 text-[11px] font-bold bg-sky-500/15 text-sky-200 border border-sky-400/25 px-2.5 py-0.5 rounded-full">
             <Cloud className="w-3.5 h-3.5" />
             <span>Supabase Cloud Auth</span>
           </div>
@@ -127,7 +127,7 @@ export function LoginPage({ onLoginSuccess }: LoginPageProps) {
             }}
             className={`py-2 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1 ${
               mode === 'signup'
-                ? 'bg-white text-teal-800 shadow-xs'
+                ? 'bg-white text-sky-800 shadow-xs'
                 : 'text-slate-500 hover:text-slate-800'
             }`}
           >
@@ -170,7 +170,7 @@ export function LoginPage({ onLoginSuccess }: LoginPageProps) {
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
                 placeholder="د. ..."
-                className="w-full px-3.5 py-2.5 text-sm font-semibold bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none"
+                className="w-full px-3.5 py-2.5 text-sm font-semibold bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none"
               />
             </div>
           )}
@@ -190,7 +190,7 @@ export function LoginPage({ onLoginSuccess }: LoginPageProps) {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="pharmacist@hospital.com"
-                className="w-full pl-10 pr-3.5 py-2.5 text-sm font-semibold bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none"
+                className="w-full pl-10 pr-3.5 py-2.5 text-sm font-semibold bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none"
               />
             </div>
           </div>
@@ -210,7 +210,7 @@ export function LoginPage({ onLoginSuccess }: LoginPageProps) {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••"
-                className="w-full pl-10 pr-10 py-2.5 text-sm font-semibold bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none"
+                className="w-full pl-10 pr-10 py-2.5 text-sm font-semibold bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none"
               />
               <button
                 type="button"
@@ -226,7 +226,7 @@ export function LoginPage({ onLoginSuccess }: LoginPageProps) {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full py-3 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 disabled:opacity-60 text-white font-extrabold text-sm rounded-xl shadow-md shadow-teal-600/25 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer"
+            className="w-full py-3 bg-gradient-to-r from-sky-600 to-sky-700 hover:from-sky-500 hover:to-sky-600 disabled:opacity-60 text-white font-extrabold text-sm rounded-xl shadow-md shadow-sky-600/25 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer"
           >
             <ShieldCheck className="w-4 h-4" />
             <span>

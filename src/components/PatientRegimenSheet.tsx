@@ -62,7 +62,7 @@ export function PatientRegimenSheet({
             <FileSpreadsheet className="w-5 h-5 text-emerald-600" />
             <span>
               Patient Active Medication Sheet —{' '}
-              <span className="text-teal-800">{patient.fullName || 'Unnamed Patient'}</span>
+              <span className="text-sky-800">{patient.fullName || 'Unnamed Patient'}</span>
             </span>
           </h2>
           <p className="text-xs text-slate-500 mt-0.5">
@@ -169,7 +169,7 @@ export function PatientRegimenSheet({
           </p>
           <button
             onClick={onGoToAutoFill}
-            className="px-4 py-2 bg-teal-700 text-white rounded-xl text-xs font-bold cursor-pointer"
+            className="px-4 py-2 bg-sky-700 text-white rounded-xl text-xs font-bold cursor-pointer"
           >
             Go to All Drugs Auto-Fill Table
           </button>
@@ -226,11 +226,11 @@ export function PatientRegimenSheet({
                       )}
                     </div>
 
-                    <div className="bg-teal-50 border-2 border-teal-600 px-3.5 py-1.5 rounded-xl text-center">
-                      <div className="text-[10px] font-extrabold text-teal-800 uppercase">
+                    <div className="bg-sky-50 border-2 border-sky-600 px-3.5 py-1.5 rounded-xl text-center">
+                      <div className="text-[10px] font-extrabold text-sky-800 uppercase">
                         Final Vol
                       </div>
-                      <div className="text-xl font-black text-teal-900 font-mono tabular-nums">
+                      <div className="text-xl font-black text-sky-900 font-mono tabular-nums">
                         {item.finalVolumeMl} ml
                       </div>
                     </div>
@@ -286,7 +286,7 @@ export function PatientRegimenSheet({
                     <div className="text-xs font-bold text-indigo-950 flex flex-wrap items-center gap-2" dir="rtl">
                       <span>
                         اسحب من الدواء:{' '}
-                        <strong className="font-mono text-sm text-teal-800">
+                        <strong className="font-mono text-sm text-sky-800">
                           {drawCalc.drawDrugMl} mL
                         </strong>
                       </span>
@@ -349,7 +349,7 @@ export function PatientRegimenSheet({
 
                   <div className="md:col-span-8">
                     <div className="text-[10px] font-bold text-slate-500 uppercase mb-1.5 flex items-center gap-1">
-                      <Clock className="w-3.5 h-3.5 text-teal-600" />
+                      <Clock className="w-3.5 h-3.5 text-sky-600" />
                       <span>
                         Auto-Generated 24h Administration Schedule ({item.scheduleSlots.length}{' '}
                         Stickers):
@@ -361,7 +361,7 @@ export function PatientRegimenSheet({
                           key={slot.index}
                           className="px-3 py-1.5 rounded-lg bg-slate-900 text-white text-xs font-bold font-mono flex items-center gap-2 tabular-nums"
                         >
-                          <span className="text-teal-300">#{slot.index}</span>
+                          <span className="text-sky-300">#{slot.index}</span>
                           <span>{slot.timeStr}</span>
                           <span className="text-slate-400">|</span>
                           <span className="text-amber-300">{slot.dateStr}</span>

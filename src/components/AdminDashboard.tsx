@@ -157,7 +157,7 @@ export function AdminDashboard({
         <div className="bg-white rounded-3xl border border-slate-200/80 p-5 shadow-[0_2px_16px_rgba(15,23,42,0.03)]">
           <div className="flex items-center justify-between text-slate-500 text-xs font-bold">
             <span>Users</span>
-            <Users className="w-4 h-4 text-teal-600" />
+            <Users className="w-4 h-4 text-sky-600" />
           </div>
           <div className="text-2xl font-black font-mono text-slate-900 mt-2">
             {profiles.length}
@@ -212,7 +212,7 @@ export function AdminDashboard({
                 : 'text-slate-500 hover:text-slate-900'
             }`}
           >
-            <Activity className="w-3.5 h-3.5 text-teal-600" />
+            <Activity className="w-3.5 h-3.5 text-sky-600" />
             <span>سجل النشاطات (Logs)</span>
           </button>
           <button
@@ -271,7 +271,7 @@ export function AdminDashboard({
                 value={logSearch}
                 onChange={(e) => setLogSearch(e.target.value)}
                 placeholder="ابحث بالاسم، البريد، نوع العملية، أو التفاصيل..."
-                className="w-full pl-10 pr-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-teal-500"
+                className="w-full pl-10 pr-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-sky-500"
               />
             </div>
 
@@ -311,7 +311,7 @@ export function AdminDashboard({
                       </div>
                     </td>
                     <td className="py-3 px-4 whitespace-nowrap">
-                      <span className="px-2.5 py-1 rounded-full text-[10px] font-extrabold bg-teal-50 text-teal-800 border border-teal-200 font-mono">
+                      <span className="px-2.5 py-1 rounded-full text-[10px] font-extrabold bg-sky-50 text-sky-800 border border-sky-200 font-mono">
                         {log.action}
                       </span>
                     </td>
@@ -442,7 +442,7 @@ export function AdminDashboard({
                     <td className="py-3 px-4 font-mono text-slate-600">
                       {rec.mrn || '—'} • {rec.ward || '—'}
                     </td>
-                    <td className="py-3 px-4 font-mono font-bold text-teal-700">
+                    <td className="py-3 px-4 font-mono font-bold text-sky-700">
                       {rec.weight_kg} kg
                     </td>
                     <td className="py-3 px-4 font-mono">
@@ -454,7 +454,7 @@ export function AdminDashboard({
                     <td className="py-3 px-4 text-right">
                       <button
                         onClick={() => onLoadPatient(rec)}
-                        className="px-3 py-1.5 rounded-lg bg-teal-50 hover:bg-teal-100 text-teal-800 font-bold cursor-pointer"
+                        className="px-3 py-1.5 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-800 font-bold cursor-pointer"
                       >
                         فتح الشيت
                       </button>

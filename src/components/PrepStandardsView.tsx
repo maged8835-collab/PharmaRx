@@ -60,7 +60,7 @@ export function PrepStandardsView({
       <div className="lg:col-span-5 bg-white rounded-3xl border border-slate-200/80 shadow-[0_2px_16px_rgba(15,23,42,0.03)] p-5 sm:p-6 space-y-4">
         <div className="border-b border-slate-100 pb-3">
           <h2 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
-            <Plus className="w-5 h-5 text-teal-600" />
+            <Plus className="w-5 h-5 text-sky-600" />
             <span>Add Drug or Bulk Import Formulary</span>
           </h2>
           <p className="text-xs text-slate-500 mt-0.5" dir="rtl">
@@ -172,7 +172,7 @@ export function PrepStandardsView({
                 onChange={(e) =>
                   onNewDrugFormChange({ ...newDrugForm, finalConcMgMl: e.target.value })
                 }
-                className="w-full p-2 text-xs font-black font-mono tabular-nums bg-teal-50 border border-teal-400 rounded-lg"
+                className="w-full p-2 text-xs font-black font-mono tabular-nums bg-sky-50 border border-sky-400 rounded-lg"
               />
             </div>
 
@@ -275,7 +275,7 @@ export function PrepStandardsView({
 
           <button
             type="submit"
-            className="w-full py-2.5 bg-teal-700 hover:bg-teal-800 text-white font-extrabold text-xs rounded-xl shadow-2xs"
+            className="w-full py-2.5 bg-sky-700 hover:bg-sky-800 text-white font-extrabold text-xs rounded-xl shadow-2xs"
           >
             + Save to Master Formulary
           </button>
@@ -294,7 +294,7 @@ export function PrepStandardsView({
               <span>Export JSON ({formulary.length})</span>
             </button>
 
-            <label className="px-3 py-1.5 rounded-lg text-xs font-bold bg-teal-50 border border-teal-300 text-teal-900 cursor-pointer flex items-center gap-1 hover:bg-teal-100">
+            <label className="px-3 py-1.5 rounded-lg text-xs font-bold bg-sky-50 border border-sky-300 text-sky-900 cursor-pointer flex items-center gap-1 hover:bg-sky-100">
               <Upload className="w-3.5 h-3.5" />
               <span>Import CSV / JSON</span>
               <input
@@ -330,8 +330,8 @@ export function PrepStandardsView({
             return (
               <div key={drug.id} className="py-3 px-2 hover:bg-slate-50">
                 {isEditing ? (
-                  <div className="space-y-2 bg-teal-50/70 p-3 rounded-xl border border-teal-200">
-                    <div className="font-bold text-sm text-teal-950">
+                  <div className="space-y-2 bg-sky-50/70 p-3 rounded-xl border border-sky-200">
+                    <div className="font-bold text-sm text-sky-950">
                       Editing: {drug.genericName}
                     </div>
                     <div className="grid grid-cols-2 gap-2">
@@ -344,7 +344,7 @@ export function PrepStandardsView({
                           step="0.01"
                           value={editConcValue}
                           onChange={(e) => setEditConcValue(e.target.value)}
-                          className="w-full p-1.5 text-xs font-black font-mono bg-white border border-teal-500 rounded"
+                          className="w-full p-1.5 text-xs font-black font-mono bg-white border border-sky-500 rounded"
                         />
                       </div>
                       <div>
@@ -390,7 +390,7 @@ export function PrepStandardsView({
                       </button>
                       <button
                         onClick={() => handleSaveEdit(drug.id)}
-                        className="px-3 py-1 text-xs font-bold bg-teal-700 text-white rounded-lg"
+                        className="px-3 py-1 text-xs font-bold bg-sky-700 text-white rounded-lg"
                       >
                         Save Standard
                       </button>
@@ -417,7 +417,7 @@ export function PrepStandardsView({
 
                     <button
                       onClick={() => startEditing(drug)}
-                      className="px-2.5 py-1.5 rounded-lg text-xs font-bold bg-slate-100 hover:bg-teal-50 text-slate-700 hover:text-teal-800 border border-slate-200 flex items-center gap-1 shrink-0"
+                      className="px-2.5 py-1.5 rounded-lg text-xs font-bold bg-slate-100 hover:bg-sky-50 text-slate-700 hover:text-sky-800 border border-slate-200 flex items-center gap-1 shrink-0"
                     >
                       <Edit3 className="w-3.5 h-3.5" />
                       <span>Edit</span>

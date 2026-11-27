@@ -101,7 +101,7 @@ export function QuickAddModal({
                 required
                 value={newDrugForm.finalConcMgMl}
                 onChange={(e) => onChange({ ...newDrugForm, finalConcMgMl: e.target.value })}
-                className="w-full p-2 text-xs font-black font-mono bg-teal-50 border border-teal-500 rounded-lg"
+                className="w-full p-2 text-xs font-black font-mono bg-sky-50 border border-sky-500 rounded-lg"
               />
             </div>
             <div>
@@ -188,7 +188,7 @@ export function QuickAddModal({
             </button>
             <button
               type="submit"
-              className="px-5 py-2 text-xs font-extrabold bg-teal-700 hover:bg-teal-800 text-white rounded-xl"
+              className="px-5 py-2 text-xs font-extrabold bg-sky-700 hover:bg-sky-800 text-white rounded-xl"
             >
               Save &amp; Auto-Calculate Now
             </button>
