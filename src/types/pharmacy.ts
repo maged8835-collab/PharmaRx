@@ -6,7 +6,14 @@ export type StickerSize = '50x30' | '60x40' | '70x40';
 
 export type LabelNameMode = 'trade' | 'generic';
 
-export type ActiveTab = 'patients' | 'autofill' | 'regimen' | 'labels' | 'config' | 'admin';
+export type ActiveTab =
+  | 'patients'
+  | 'autofill'
+  | 'regimen'
+  | 'labels'
+  | 'config'
+  | 'references'
+  | 'admin';
 
 export type PharmacistRole = 'Clinical Pharmacist' | 'Senior Pharmacist' | 'Admin';
 

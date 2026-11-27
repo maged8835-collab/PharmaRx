@@ -72,6 +72,11 @@ const AdminDashboard = lazy(() =>
     default: m.AdminDashboard,
   }))
 );
+const ReferencesView = lazy(() =>
+  import('./components/ReferencesView').then((m) => ({
+    default: m.ReferencesView,
+  }))
+);
 
 const INITIAL_NEW_DRUG_FORM: NewDrugFormState = {
   tradeName: '',
@@ -809,6 +814,10 @@ export default function App() {
                 onExportJson={handleExportMasterJson}
                 onImportFile={handleImportMasterFile}
               />
+            )}
+
+            {activeTab === 'references' && (
+              <ReferencesView formulary={formulary} />
             )}
 
             {activeTab === 'admin' && session.role === 'Admin' && (

@@ -1,4 +1,5 @@
 import {
+  BookOpen,
   Cloud,
   Database,
   FileSpreadsheet,
@@ -70,6 +71,7 @@ export function HeaderNav({
         ]
       : []),
     { id: 'config', label: 'Standards', icon: Database },
+    { id: 'references', label: 'References', icon: BookOpen },
     ...(session.role === 'Admin'
       ? [{ id: 'admin' as ActiveTab, label: 'Admin', icon: Shield }]
       : []),
