@@ -35,7 +35,7 @@ drop policy if exists "Users can insert own profile" on public.profiles;
 create policy "Users can insert own profile"
   on public.profiles for insert
   to authenticated
-  with check (auth.uid() = id);
+  with check (auth.uid() = id and role = 'pharmacist' and is_active = true);
 
 drop policy if exists "Admins can update any profile" on public.profiles;
 create policy "Admins can update any profile"
